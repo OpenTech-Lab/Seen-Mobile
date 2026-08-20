@@ -15,7 +15,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          # Pinned to match ios-release.yml — see that file for why.
+          flutter-version: 3.41.9
           cache: true
 
       - name: Install Flutter dependencies

@@ -16,7 +16,12 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          # Pinned instead of a floating `channel: stable` — that resolves
+          # to whatever is newest at build time, so CI silently drifted onto
+          # a Flutter/Dart version that broke compiling spot_theme.dart
+          # (CupertinoPageTransitionsBuilder became unresolvable). Pinning
+          # to the version verified working locally keeps this reproducible.
+          flutter-version: 3.41.9
           cache: true
 
       - name: Install Flutter dependencies
