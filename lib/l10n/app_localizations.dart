@@ -479,6 +479,96 @@ abstract class AppLocalizations {
   /// **'That is not a valid #seen recovery QR.'**
   String get invalidRecoveryQrError;
 
+  /// No description provided for @connectToDesktopLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to desktop'**
+  String get connectToDesktopLabel;
+
+  /// No description provided for @connectToDesktopValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan website QR'**
+  String get connectToDesktopValue;
+
+  /// No description provided for @desktopLoginScannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to desktop'**
+  String get desktopLoginScannerTitle;
+
+  /// No description provided for @desktopLoginScannerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at the QR code shown in your browser.'**
+  String get desktopLoginScannerHint;
+
+  /// No description provided for @chooseDesktopLoginQrImageTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose desktop QR image'**
+  String get chooseDesktopLoginQrImageTooltip;
+
+  /// No description provided for @desktopLoginApprovalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve desktop access?'**
+  String get desktopLoginApprovalTitle;
+
+  /// No description provided for @desktopLoginApprovalDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This will authorize the browser to use your selected identity.'**
+  String get desktopLoginApprovalDescription;
+
+  /// No description provided for @desktopLoginWebsiteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get desktopLoginWebsiteLabel;
+
+  /// No description provided for @desktopLoginBrowserLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Browser'**
+  String get desktopLoginBrowserLabel;
+
+  /// No description provided for @desktopLoginExpiryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get desktopLoginExpiryLabel;
+
+  /// No description provided for @approveDesktopLoginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approveDesktopLoginButton;
+
+  /// No description provided for @mobileIdentityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile identity'**
+  String get mobileIdentityLabel;
+
+  /// No description provided for @desktopLoginApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Desktop access approved.'**
+  String get desktopLoginApproved;
+
+  /// No description provided for @desktopLoginApprovalFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not approve desktop access.'**
+  String get desktopLoginApprovalFailed;
+
+  /// No description provided for @desktopLoginInvalidQr.
+  ///
+  /// In en, this message translates to:
+  /// **'That is not a valid #seen desktop login code.'**
+  String get desktopLoginInvalidQr;
+
   /// No description provided for @savedWordsButton.
   ///
   /// In en, this message translates to:

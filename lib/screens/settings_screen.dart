@@ -11,6 +11,7 @@ import 'package:mobile/models/profile_model.dart';
 import 'package:mobile/models/wallet_model.dart';
 import 'package:mobile/screens/altcha_gate_screen.dart';
 import 'package:mobile/screens/asset_transport_settings_screen.dart';
+import 'package:mobile/screens/desktop_login_scanner_screen.dart';
 import 'package:mobile/screens/interests_screen.dart';
 import 'package:mobile/screens/identity_switcher_screen.dart';
 import 'package:mobile/screens/my_posts_screen.dart';
@@ -275,6 +276,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (nextWallet != null && mounted) {
       Navigator.of(context).pop<WalletModel>(nextWallet);
+    }
+  }
+
+  Future<void> _openDesktopLogin() async {
+    final connected = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => DesktopLoginScannerScreen(wallet: widget.wallet),
+      ),
+    );
+    if (connected == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.desktopLoginApproved),
+        ),
+      );
     }
   }
 
@@ -644,6 +660,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: CupertinoIcons.person_2,
             label: l10n.identitiesLabel,
             onTap: _openIdentitySwitcher,
+          ),
+          const SizedBox(height: SpotSpacing.sm),
+          _SettingsRow(
+            icon: CupertinoIcons.qrcode_viewfinder,
+            label: l10n.connectToDesktopLabel,
+            value: l10n.connectToDesktopValue,
+            onTap: _openDesktopLogin,
           ),
           const SizedBox(height: SpotSpacing.sm),
           _SettingsRow(

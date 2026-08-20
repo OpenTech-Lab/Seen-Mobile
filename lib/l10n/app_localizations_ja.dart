@@ -203,6 +203,52 @@ class AppLocalizationsJa extends AppLocalizations {
   String get invalidRecoveryQrError => '有効な#seen復元QRコードではありません。';
 
   @override
+  String get connectToDesktopLabel => 'デスクトップに接続';
+
+  @override
+  String get connectToDesktopValue => 'Web QRをスキャン';
+
+  @override
+  String get desktopLoginScannerTitle => 'デスクトップに接続';
+
+  @override
+  String get desktopLoginScannerHint => 'ブラウザに表示されたQRコードにカメラを向けてください。';
+
+  @override
+  String get chooseDesktopLoginQrImageTooltip => 'デスクトップQR画像を選択';
+
+  @override
+  String get desktopLoginApprovalTitle => 'デスクトップ接続を許可しますか？';
+
+  @override
+  String get desktopLoginApprovalDescription =>
+      '選択中のアイデンティティでこのブラウザを使用できるようにします。';
+
+  @override
+  String get desktopLoginWebsiteLabel => 'Webサイト';
+
+  @override
+  String get desktopLoginBrowserLabel => 'ブラウザ';
+
+  @override
+  String get desktopLoginExpiryLabel => '有効期限';
+
+  @override
+  String get approveDesktopLoginButton => '許可';
+
+  @override
+  String get mobileIdentityLabel => 'モバイルのアイデンティティ';
+
+  @override
+  String get desktopLoginApproved => 'デスクトップ接続を許可しました。';
+
+  @override
+  String get desktopLoginApprovalFailed => 'デスクトップ接続を許可できませんでした。';
+
+  @override
+  String get desktopLoginInvalidQr => '有効な #seen デスクトップ接続コードではありません。';
+
+  @override
   String get savedWordsButton => 'これらの単語を保存しました';
 
   @override

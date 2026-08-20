@@ -17,6 +17,14 @@ abstract final class AppConfig {
 
   static const String cdnPresignUrl = String.fromEnvironment('CDN_PRESIGN_URL');
 
+  /// Canonical origin used for mobile-approved desktop login. Keep this as a
+  /// build-time override so staging can use its own web deployment without
+  /// changing the QR protocol or shipping a second code path.
+  static const String desktopLoginOrigin = String.fromEnvironment(
+    'DESKTOP_LOGIN_ORIGIN',
+    defaultValue: 'https://opentech-ailab.org',
+  );
+
   static String _requireBuildValue(String key, String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {

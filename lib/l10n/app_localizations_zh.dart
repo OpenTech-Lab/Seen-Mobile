@@ -203,6 +203,51 @@ class AppLocalizationsZh extends AppLocalizations {
   String get invalidRecoveryQrError => '這不是有效的 #seen 恢復 QR 碼。';
 
   @override
+  String get connectToDesktopLabel => '連接桌面';
+
+  @override
+  String get connectToDesktopValue => '掃描網站 QR 碼';
+
+  @override
+  String get desktopLoginScannerTitle => '連接桌面';
+
+  @override
+  String get desktopLoginScannerHint => '將相機對準瀏覽器中顯示的 QR 碼。';
+
+  @override
+  String get chooseDesktopLoginQrImageTooltip => '選擇桌面 QR 圖片';
+
+  @override
+  String get desktopLoginApprovalTitle => '允許桌面存取嗎？';
+
+  @override
+  String get desktopLoginApprovalDescription => '這會允許瀏覽器使用您選取的身份。';
+
+  @override
+  String get desktopLoginWebsiteLabel => '網站';
+
+  @override
+  String get desktopLoginBrowserLabel => '瀏覽器';
+
+  @override
+  String get desktopLoginExpiryLabel => '有效期限';
+
+  @override
+  String get approveDesktopLoginButton => '允許';
+
+  @override
+  String get mobileIdentityLabel => '手機身份';
+
+  @override
+  String get desktopLoginApproved => '已允許桌面存取。';
+
+  @override
+  String get desktopLoginApprovalFailed => '無法允許桌面存取。';
+
+  @override
+  String get desktopLoginInvalidQr => '這不是有效的 #seen 桌面登入代碼。';
+
+  @override
   String get savedWordsButton => '我已儲存這些單詞';
 
   @override
@@ -1460,6 +1505,51 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get invalidRecoveryQrError => '這不是有效的 #seen 恢復 QR 碼。';
+
+  @override
+  String get connectToDesktopLabel => '連接桌面';
+
+  @override
+  String get connectToDesktopValue => '掃描網站 QR 碼';
+
+  @override
+  String get desktopLoginScannerTitle => '連接桌面';
+
+  @override
+  String get desktopLoginScannerHint => '將相機對準瀏覽器中顯示的 QR 碼。';
+
+  @override
+  String get chooseDesktopLoginQrImageTooltip => '選擇桌面 QR 圖片';
+
+  @override
+  String get desktopLoginApprovalTitle => '允許桌面存取嗎？';
+
+  @override
+  String get desktopLoginApprovalDescription => '這會允許瀏覽器使用您選取的身份。';
+
+  @override
+  String get desktopLoginWebsiteLabel => '網站';
+
+  @override
+  String get desktopLoginBrowserLabel => '瀏覽器';
+
+  @override
+  String get desktopLoginExpiryLabel => '有效期限';
+
+  @override
+  String get approveDesktopLoginButton => '允許';
+
+  @override
+  String get mobileIdentityLabel => '手機身份';
+
+  @override
+  String get desktopLoginApproved => '已允許桌面存取。';
+
+  @override
+  String get desktopLoginApprovalFailed => '無法允許桌面存取。';
+
+  @override
+  String get desktopLoginInvalidQr => '這不是有效的 #seen 桌面登入代碼。';
 
   @override
   String get savedWordsButton => '我已儲存這些單詞';

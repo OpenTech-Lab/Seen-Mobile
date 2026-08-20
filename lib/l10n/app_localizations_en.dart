@@ -209,6 +209,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidRecoveryQrError => 'That is not a valid #seen recovery QR.';
 
   @override
+  String get connectToDesktopLabel => 'Connect to desktop';
+
+  @override
+  String get connectToDesktopValue => 'Scan website QR';
+
+  @override
+  String get desktopLoginScannerTitle => 'Connect to desktop';
+
+  @override
+  String get desktopLoginScannerHint =>
+      'Point the camera at the QR code shown in your browser.';
+
+  @override
+  String get chooseDesktopLoginQrImageTooltip => 'Choose desktop QR image';
+
+  @override
+  String get desktopLoginApprovalTitle => 'Approve desktop access?';
+
+  @override
+  String get desktopLoginApprovalDescription =>
+      'This will authorize the browser to use your selected identity.';
+
+  @override
+  String get desktopLoginWebsiteLabel => 'Website';
+
+  @override
+  String get desktopLoginBrowserLabel => 'Browser';
+
+  @override
+  String get desktopLoginExpiryLabel => 'Expires';
+
+  @override
+  String get approveDesktopLoginButton => 'Approve';
+
+  @override
+  String get mobileIdentityLabel => 'Mobile identity';
+
+  @override
+  String get desktopLoginApproved => 'Desktop access approved.';
+
+  @override
+  String get desktopLoginApprovalFailed => 'Could not approve desktop access.';
+
+  @override
+  String get desktopLoginInvalidQr =>
+      'That is not a valid #seen desktop login code.';
+
+  @override
   String get savedWordsButton => 'I have saved these words';
 
   @override
