@@ -19,9 +19,8 @@ typedef SplashLoggedOutBuilder = Widget Function();
 
 /// Session entry screen for signed-in users.
 ///
-/// Shows a loading page on cold launch and again whenever the app resumes,
-/// warming recent metadata into local storage before handing control back to
-/// the main shell.
+/// Shows a quiet loading page on cold launch, then refreshes cached session data
+/// in the background whenever the app resumes.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
     super.key,
@@ -182,20 +181,6 @@ class _SplashScreenState extends State<SplashScreen>
         widget.homeBuilder?.call(widget.wallet) ??
         HomeScreen(key: _homeKey, wallet: widget.wallet);
 
-    return Stack(
-      children: [
-        home,
-        if (_isRefreshing)
-          Positioned.fill(
-            child: Material(
-              color: Colors.transparent,
-              child: AppLoadingView(
-                title: l10n.splashRefreshingTitle,
-                subtitle: l10n.splashRefreshingSubtitle,
-              ),
-            ),
-          ),
-      ],
-    );
+    return home;
   }
 }

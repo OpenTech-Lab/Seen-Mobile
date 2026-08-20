@@ -9,6 +9,7 @@ import 'package:mobile/models/profile_model.dart';
 import 'package:mobile/models/wallet_model.dart';
 import 'package:mobile/screens/splash_screen.dart';
 import 'package:mobile/services/app_refresh_service.dart';
+import 'package:mobile/widgets/app_loading_view.dart';
 
 Widget _localizedApp({required Widget home}) => MaterialApp(
   localizationsDelegates: const [
@@ -50,8 +51,9 @@ void main() {
       ),
     );
 
-    expect(find.text('Loading #seen'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(AppLoadingView), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.text('Loading #seen'), findsNothing);
     expect(find.text('Home ready'), findsNothing);
 
     blockers.single.complete();
@@ -61,46 +63,48 @@ void main() {
     expect(find.text('Loading #seen'), findsNothing);
   });
 
-  testWidgets('SplashScreen shows the loading overlay again on app resume', (
-    tester,
-  ) async {
-    final blockers = [Completer<void>(), Completer<void>()];
-    var refreshCalls = 0;
-    final service = _refreshServiceWithBlockers(
-      blockers,
-      onFetchProfile: () => refreshCalls++,
-    );
+  testWidgets(
+    'SplashScreen keeps home visible while refreshing on app resume',
+    (tester) async {
+      final blockers = [Completer<void>(), Completer<void>()];
+      var refreshCalls = 0;
+      final service = _refreshServiceWithBlockers(
+        blockers,
+        onFetchProfile: () => refreshCalls++,
+      );
 
-    await tester.pumpWidget(
-      _localizedApp(
-        home: SplashScreen(
-          wallet: _wallet(),
-          refreshService: service,
-          verificationRunner: () async {},
-          homeBuilder: (_) => const Text('Home ready'),
+      await tester.pumpWidget(
+        _localizedApp(
+          home: SplashScreen(
+            wallet: _wallet(),
+            refreshService: service,
+            verificationRunner: () async {},
+            homeBuilder: (_) => const Text('Home ready'),
+          ),
         ),
-      ),
-    );
+      );
 
-    blockers.first.complete();
-    await tester.pumpAndSettle();
-    expect(find.text('Home ready'), findsOneWidget);
-    expect(refreshCalls, 1);
+      blockers.first.complete();
+      await tester.pumpAndSettle();
+      expect(find.text('Home ready'), findsOneWidget);
+      expect(refreshCalls, 1);
 
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pump();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
 
-    expect(find.text('Refreshing data…'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    expect(refreshCalls, 2);
+      expect(find.text('Home ready'), findsOneWidget);
+      expect(find.byType(AppLoadingView), findsNothing);
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(refreshCalls, 2);
 
-    blockers.last.complete();
-    await tester.pumpAndSettle();
+      blockers.last.complete();
+      await tester.pumpAndSettle();
 
-    expect(find.text('Refreshing data…'), findsNothing);
-    expect(find.text('Home ready'), findsOneWidget);
-  });
+      expect(find.text('Refreshing data…'), findsNothing);
+      expect(find.text('Home ready'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'SplashScreen logs out and redirects to onboarding when profile load fails on startup',

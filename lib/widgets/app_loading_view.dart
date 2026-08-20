@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/theme/spot_theme.dart';
 
+/// A quiet, brand-led loading state. Status copy remains available to
+/// assistive technologies without adding visual noise to the launch surface.
 class AppLoadingView extends StatelessWidget {
   const AppLoadingView({super.key, required this.title, this.subtitle});
 
@@ -13,44 +15,27 @@ class AppLoadingView extends StatelessWidget {
     return ColoredBox(
       color: SpotColors.bg,
       child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: SpotSpacing.xxxl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'assets/logo_transparent.png',
-                height: 40,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                  Icons.radio_button_checked,
-                  color: SpotColors.textSecondary,
-                  size: 24,
-                ),
+        child: Semantics(
+          container: true,
+          liveRegion: true,
+          label: [title, ?subtitle].join(' '),
+          child: ColorFiltered(
+            colorFilter: const ColorFilter.mode(
+              SpotColors.textPrimary,
+              BlendMode.srcIn,
+            ),
+            child: Image.asset(
+              'assets/logo_transparent.png',
+              width: 52,
+              height: 52,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+              errorBuilder: (context, error, stackTrace) => const Icon(
+                Icons.radio_button_checked,
+                color: SpotColors.textPrimary,
+                size: 36,
               ),
-              const SizedBox(height: SpotSpacing.xl),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(SpotRadius.full),
-                child: const SizedBox(
-                  width: 160,
-                  child: LinearProgressIndicator(
-                    minHeight: 4,
-                    color: SpotColors.accent,
-                    backgroundColor: SpotColors.surface,
-                  ),
-                ),
-              ),
-              const SizedBox(height: SpotSpacing.lg),
-              Text(title, style: SpotType.label),
-              if (subtitle != null) ...[
-                const SizedBox(height: SpotSpacing.sm),
-                Text(
-                  subtitle!,
-                  textAlign: TextAlign.center,
-                  style: SpotType.caption,
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),
