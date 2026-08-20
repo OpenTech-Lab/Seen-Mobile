@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -20,7 +19,6 @@ import 'package:mobile/widgets/dismiss_keyboard_on_tap.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: '.env');
   final supabaseHost = Uri.parse(AppConfig.supabaseUrl).host;
   debugPrint('[Config] Supabase host: $supabaseHost');
   await Supabase.initialize(

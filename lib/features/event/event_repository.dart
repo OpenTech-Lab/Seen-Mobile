@@ -65,7 +65,7 @@ class EventRepository {
   Future<void> _attachStreams({String? authorPubkey}) async {
     if (_globalRequested && _globalPostsSub == null) {
       _globalPostsSub = _metadata.client
-          .from('posts')
+          .from('post_feed')
           .stream(primaryKey: ['id'])
           .order('created_at', ascending: false)
           .limit(200)
@@ -83,7 +83,7 @@ class EventRepository {
         });
 
     _witnessSub ??= _metadata.client
-        .from('witness_signals')
+        .from('witness_feed')
         .stream(primaryKey: ['id'])
         .order('created_at', ascending: false)
         .limit(500)
@@ -107,7 +107,7 @@ class EventRepository {
         await _rebuildFromRows();
       } else {
         _authorPostsSubs[authorPubkey] = _metadata.client
-            .from('posts')
+            .from('post_feed')
             .stream(primaryKey: ['id'])
             .inFilter('user_id', authorIds)
             .order('created_at', ascending: false)

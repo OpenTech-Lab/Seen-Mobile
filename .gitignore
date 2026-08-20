@@ -2,6 +2,9 @@
 .env
 **/node_modules/
 terraform.tfvars
+*.tfstate
+*.tfstate.*
+infra/**/.terraform/
 
 # ios certificates and provisioning profiles
 scripts/ios/**/*.p8

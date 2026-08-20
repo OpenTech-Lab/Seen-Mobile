@@ -58,7 +58,8 @@ class _TermsContent extends StatelessWidget {
         ),
         PolicySection(
           heading: '4. Prohibited Content',
-          body: 'You may not post or share any of the following:\n\n'
+          body:
+              'You may not post or share any of the following:\n\n'
               '• Harassment, threats, or targeted abuse of any individual\n'
               '• Hate speech based on race, ethnicity, religion, gender, sexual orientation, disability, or national origin\n'
               '• Sexual exploitation, non-consensual intimate imagery, or content involving minors\n'
@@ -100,7 +101,7 @@ class _TermsContent extends StatelessWidget {
         PolicySection(
           heading: '11. Contact',
           body:
-              'If you have any questions about these Terms of Use, please contact us:\n\nicyanstudio2025@gmail.com',
+              'If you have any questions about these Terms of Use, please contact us:\n\nsupport@icyanstudio.net',
         ),
       ],
     );

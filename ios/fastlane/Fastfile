@@ -90,6 +90,14 @@ platform :ios do
 
       cdn_base_url = ENV["CDN_BASE_URL"].to_s.strip
       cdn_presign_url = ENV["CDN_PRESIGN_URL"].to_s.strip
+      supabase_url = ENV["SUPABASE_URL"].to_s.strip
+      supabase_anon_key = ENV["SUPABASE_ANON_KEY"].to_s.strip
+
+      UI.user_error!("SUPABASE_URL is required") if supabase_url.empty?
+      UI.user_error!("SUPABASE_ANON_KEY is required") if supabase_anon_key.empty?
+
+      build_cmd << "--dart-define=SUPABASE_URL=#{supabase_url}"
+      build_cmd << "--dart-define=SUPABASE_ANON_KEY=#{supabase_anon_key}"
 
       build_cmd << "--dart-define=CDN_BASE_URL=#{cdn_base_url}" unless cdn_base_url.empty?
       build_cmd << "--dart-define=CDN_PRESIGN_URL=#{cdn_presign_url}" unless cdn_presign_url.empty?

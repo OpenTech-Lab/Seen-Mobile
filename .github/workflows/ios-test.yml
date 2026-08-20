@@ -45,22 +45,16 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Write runtime .env asset
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: |
-          cat > .env <<EOF
-          SUPABASE_URL=$SUPABASE_URL
-          SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
-          EOF
-
       - name: Build iOS IPA (release, no codesign)
         env:
           CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
           CDN_PRESIGN_URL: ${{ secrets.CDN_PRESIGN_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           build_cmd=(flutter build ipa --release --no-codesign)
+          build_cmd+=("--dart-define=SUPABASE_URL=$SUPABASE_URL")
+          build_cmd+=("--dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY")
           if [ -n "$CDN_BASE_URL" ]; then
             build_cmd+=("--dart-define=CDN_BASE_URL=$CDN_BASE_URL")
           fi

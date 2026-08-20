@@ -35,7 +35,7 @@ Map<String, dynamic> buildSoftDeletePostParams({
 
 const _profileSelectColumns =
     'id, created_at, display_name, description, legacy_pubkey, legacy_npub, '
-    'device_id, avatar_seed, avatar_content_hash, threads_public, '
+    'avatar_seed, avatar_content_hash, threads_public, '
     'replies_public, footprint_map_public';
 
 String? _normalizedIdentityValue(String? value) {
@@ -126,11 +126,11 @@ class MetadataService {
           'description': existingProfile?.description,
           'legacy_pubkey': wallet.publicKeyHex,
           'legacy_npub': wallet.npub,
-          'device_id': wallet.deviceId,
           'avatar_seed': avatarSeed,
           'avatar_content_hash': existingProfile?.avatarContentHash,
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         }, onConflict: 'id');
+        await _upsertPrivateDeviceId(user.id, wallet.deviceId);
         debugPrint('[MetadataService] Profile sync complete for ${user.id}');
       } on PostgrestException catch (error, stackTrace) {
         debugPrint(
@@ -285,7 +285,6 @@ class MetadataService {
       'description': normalizedDescription,
       'legacy_pubkey': wallet.publicKeyHex,
       'legacy_npub': wallet.npub,
-      'device_id': wallet.deviceId,
       'avatar_seed': existingProfile?.avatarSeed?.trim().isNotEmpty == true
           ? existingProfile!.avatarSeed!.trim()
           : wallet.publicKeyHex.substring(0, 12),
@@ -293,6 +292,7 @@ class MetadataService {
           avatarContentHash ?? existingProfile?.avatarContentHash,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }, onConflict: 'id');
+    await _upsertPrivateDeviceId(user.id, wallet.deviceId);
 
     final updatedProfile = await _fetchProfileById(user.id);
     if (updatedProfile == null) {
@@ -318,7 +318,6 @@ class MetadataService {
       'id': user.id,
       'legacy_pubkey': wallet.publicKeyHex,
       'legacy_npub': wallet.npub,
-      'device_id': wallet.deviceId,
       'threads_public':
           threadsPublic ?? existingProfile?.areThreadsPublic ?? true,
       'replies_public':
@@ -327,6 +326,7 @@ class MetadataService {
           footprintMapPublic ?? existingProfile?.isFootprintMapPublic ?? false,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }, onConflict: 'id');
+    await _upsertPrivateDeviceId(user.id, wallet.deviceId);
 
     final updatedProfile = await _fetchProfileById(user.id);
     if (updatedProfile == null) {
@@ -669,7 +669,7 @@ class MetadataService {
       if (authorIds.isEmpty) return const [];
     }
 
-    var query = client.from('posts').select().isFilter('deleted_at', null);
+    var query = client.from('post_feed').select().isFilter('deleted_at', null);
 
     if (before != null) {
       query = query.lt('created_at', before.toUtc().toIso8601String());
@@ -696,7 +696,7 @@ class MetadataService {
 
     final rows = List<Map<String, dynamic>>.from(
       await client
-          .from('witness_signals')
+          .from('witness_feed')
           .select()
           .inFilter('event_hashtag', uniqueHashtags)
           .order('created_at', ascending: false),
@@ -842,7 +842,26 @@ class MetadataService {
           .limit(1),
     );
     if (rows.isEmpty) return null;
-    return ProfileModel.fromRow(rows.first);
+    final privateRows = List<Map<String, dynamic>>.from(
+      await client
+          .from('profile_private')
+          .select('device_id')
+          .eq('user_id', userId)
+          .limit(1),
+    );
+    final row = Map<String, dynamic>.from(rows.first);
+    if (privateRows.isNotEmpty) {
+      row['device_id'] = privateRows.first['device_id'];
+    }
+    return ProfileModel.fromRow(row);
+  }
+
+  Future<void> _upsertPrivateDeviceId(String userId, String deviceId) async {
+    await client.from('profile_private').upsert({
+      'user_id': userId,
+      'device_id': deviceId,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, onConflict: 'user_id');
   }
 
   String _escapeLikePattern(String value) => value

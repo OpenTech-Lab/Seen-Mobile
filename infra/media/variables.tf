@@ -33,3 +33,14 @@ variable "lambda_rate_limit_per_minute" {
   type        = number
   default     = 10
 }
+
+variable "supabase_url" {
+  description = "Supabase project URL used to validate upload sessions"
+  type        = string
+}
+
+variable "supabase_anon_key" {
+  description = "Public Supabase anon key used when validating upload sessions"
+  type        = string
+  sensitive   = true
+}

@@ -5,7 +5,7 @@ Terraform-managed AWS resources for the CDN media acceleration layer.
 ```
 S3 (content-addressed store)
   └─ CloudFront (global CDN, 365-day cache)
-Lambda (presigned URL generator, BIP-340 schnorr auth)
+Lambda (Supabase account + BIP-340 wallet proof, durable quotas)
 ```
 
 ## Prerequisites
@@ -19,7 +19,7 @@ Lambda (presigned URL generator, BIP-340 schnorr auth)
 
 ```bash
 # 1. Install Lambda dependencies
-cd lambda/presign
+cd presign
 npm install
 cd ../..
 
@@ -27,7 +27,9 @@ cd ../..
 terraform init
 
 # 3. Preview changes
-terraform plan
+terraform plan \
+  -var="supabase_url=https://your-project.supabase.co" \
+  -var="supabase_anon_key=$SUPABASE_ANON_KEY"
 
 # 4. Deploy
 terraform apply
@@ -98,7 +100,9 @@ Edit `variables.tf` or pass `-var` flags to customize:
 | `environment` | `prod` | Environment name (`dev`, `staging`, `prod`) |
 | `cloudfront_price_class` | `PriceClass_100` | `PriceClass_100` = NA+EU (cheapest), `PriceClass_200` = +Asia, `PriceClass_All` = global |
 | `cache_max_age_days` | `90` | Days before S3 objects move to archive tier |
-| `lambda_rate_limit_per_minute` | `10` | Max presign requests per pubkey per minute |
+| `lambda_rate_limit_per_minute` | `10` | Durable max presign requests per account/IP per minute |
+| `supabase_url` | required | Supabase project URL used to validate access tokens |
+| `supabase_anon_key` | required, sensitive | Public anon key used with the caller's access token |
 
 Example with overrides:
 

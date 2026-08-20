@@ -10,8 +10,11 @@ void main() {
     final wallet = await WalletService.createNewWallet();
     print('Generated Wallet Pubkey: ${wallet.publicKeyHex}');
 
-    final imagePath =
-        '/home/toyofumi/Project/Spot/scripts/daga_roszkowska-cat-3059075_640.jpg';
+    final imagePath = Platform.environment['SEEN_CDN_TEST_IMAGE'];
+    if (imagePath == null || imagePath.isEmpty) {
+      print('Set SEEN_CDN_TEST_IMAGE to run the manual CDN upload test.');
+      return;
+    }
     final file = File(imagePath);
     if (!file.existsSync()) {
       print('Image not found: $imagePath');
@@ -25,7 +28,8 @@ void main() {
     // 1. Presign
     final timestamp = (DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000)
         .toString();
-    final message = 'PUT:$hash:$timestamp';
+    const contentType = 'image/jpeg';
+    final message = 'PUT:$hash:$timestamp:${bytes.length}:$contentType';
     final sig = WalletService.signMessage(message, wallet.privateKeyHex);
 
     final presignUrl =
@@ -41,7 +45,8 @@ void main() {
         'contentHash': hash,
         'timestamp': timestamp,
         'signature': sig,
-        'contentType': 'image/jpeg',
+        'contentType': contentType,
+        'contentLength': bytes.length,
       }),
     );
 
@@ -64,6 +69,7 @@ void main() {
     final putReq = await client.putUrl(Uri.parse(uploadUrl));
     putReq.headers.contentType = ContentType('image', 'jpeg');
     putReq.contentLength = bytes.length;
+    putReq.headers.set(HttpHeaders.ifNoneMatchHeader, '*');
     putReq.add(bytes);
 
     final putRes = await putReq.close();

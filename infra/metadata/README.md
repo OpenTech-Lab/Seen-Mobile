@@ -40,7 +40,7 @@ terraform apply
 If you only want to apply the metadata SQL, you can keep a local config file next to the script:
 
 ```bash
-cd /home/toyofumi/Project/Spot/mobile/infra/metadata/scripts
+cd infra/metadata/scripts
 cp apply_sql.env.example apply_sql.env
 ```
 

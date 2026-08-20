@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:mobile/core/app_config.dart';
 import 'package:mobile/core/encryption.dart';
@@ -256,6 +257,7 @@ class CdnMediaService {
       debugPrint('[CDN] Requesting presigned URL for $contentHash...');
       var presignResult = await _requestPresignUrl(
         contentHash: contentHash,
+        contentLength: bytes.length,
         resolvedContentType: resolvedContentType,
         signPayload: signPayload,
       );
@@ -268,6 +270,7 @@ class CdnMediaService {
         );
         presignResult = await _requestPresignUrl(
           contentHash: contentHash,
+          contentLength: bytes.length,
           resolvedContentType: resolvedContentType,
           signPayload: signPayload,
           timestampSecondsOverride: presignResult.serverTimestampSeconds,
@@ -281,6 +284,11 @@ class CdnMediaService {
         );
         debugPrint(message);
         if (throwOnFailure) throw StateError(message);
+        return;
+      }
+
+      if (presignResult.alreadyExists) {
+        debugPrint('[CDN] Content already present for $contentHash');
         return;
       }
 
@@ -301,6 +309,7 @@ class CdnMediaService {
           .timeout(_uploadTimeout);
       putRequest.headers.contentType = ContentType.parse(resolvedContentType);
       putRequest.contentLength = bytes.length;
+      putRequest.headers.set(HttpHeaders.ifNoneMatchHeader, '*');
       putRequest.add(bytes);
 
       final putResponse = await putRequest.close().timeout(_uploadTimeout);
@@ -326,6 +335,7 @@ class CdnMediaService {
 
   Future<_PresignResult> _requestPresignUrl({
     required String contentHash,
+    required int contentLength,
     required String resolvedContentType,
     required Future<PresignAuth> Function(String message) signPayload,
     int? timestampSecondsOverride,
@@ -334,7 +344,8 @@ class CdnMediaService {
         timestampSecondsOverride ??
         (DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
     final timestamp = timestampSeconds.toString();
-    final message = 'PUT:$contentHash:$timestamp';
+    final message =
+        'PUT:$contentHash:$timestamp:$contentLength:$resolvedContentType';
     final auth = await signPayload(message);
 
     final presignUri = Uri.parse(_presignEndpoint);
@@ -342,6 +353,15 @@ class CdnMediaService {
         .postUrl(presignUri)
         .timeout(_presignTimeout);
     presignRequest.headers.contentType = ContentType.json;
+    final accessToken =
+        Supabase.instance.client.auth.currentSession?.accessToken;
+    if (accessToken == null || accessToken.isEmpty) {
+      throw StateError('Authenticated session required for CDN upload');
+    }
+    presignRequest.headers.set(
+      HttpHeaders.authorizationHeader,
+      'Bearer $accessToken',
+    );
     presignRequest.write(
       jsonEncode({
         'pubkey': auth.pubkey,
@@ -349,6 +369,7 @@ class CdnMediaService {
         'timestamp': timestamp,
         'signature': auth.signature,
         'contentType': resolvedContentType,
+        'contentLength': contentLength,
       }),
     );
     final presignResponse = await presignRequest.close().timeout(
@@ -371,6 +392,7 @@ class CdnMediaService {
       statusCode: presignResponse.statusCode,
       body: body,
       uploadUrl: presignJson['uploadUrl'] as String?,
+      alreadyExists: presignJson['alreadyExists'] == true,
       serverTimestampSeconds: timestampSecondsFromDateHeader(
         presignResponse.headers.value(HttpHeaders.dateHeader),
       ),
@@ -467,13 +489,16 @@ class _PresignResult {
     required this.statusCode,
     required this.body,
     this.uploadUrl,
+    this.alreadyExists = false,
     this.serverTimestampSeconds,
   });
 
   final int statusCode;
   final String body;
   final String? uploadUrl;
+  final bool alreadyExists;
   final int? serverTimestampSeconds;
 
-  bool get isSuccess => statusCode == 200 && uploadUrl != null;
+  bool get isSuccess =>
+      statusCode == 200 && (uploadUrl != null || alreadyExists);
 }

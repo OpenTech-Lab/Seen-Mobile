@@ -56,7 +56,7 @@ resource "aws_s3_bucket" "media" {
 resource "aws_s3_bucket_versioning" "media" {
   bucket = aws_s3_bucket.media.id
   versioning_configuration {
-    status = "Disabled"
+    status = "Enabled"
   }
 }
 
@@ -96,6 +96,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "media" {
     transition {
       days          = 0
       storage_class = "INTELLIGENT_TIERING"
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
     }
   }
 }
@@ -176,9 +180,9 @@ resource "aws_cloudfront_distribution" "media" {
     compress         = true
 
     # Content-addressed objects are immutable — cache aggressively
-    min_ttl     = 86400       # 1 day minimum
-    default_ttl = 31536000    # 365 days
-    max_ttl     = 31536000    # 365 days
+    min_ttl     = 86400    # 1 day minimum
+    default_ttl = 31536000 # 365 days
+    max_ttl     = 31536000 # 365 days
 
     forwarded_values {
       query_string = false
@@ -232,11 +236,22 @@ resource "aws_iam_role_policy" "lambda_s3_presign" {
       {
         Effect = "Allow"
         Action = [
+          "dynamodb:UpdateItem",
+        ]
+        Resource = aws_dynamodb_table.presign_rate_limit.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "s3:PutObject",
           "s3:GetObject",
-          "s3:HeadObject",
         ]
         Resource = "${aws_s3_bucket.media.arn}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:ListBucket"]
+        Resource = aws_s3_bucket.media.arn
       },
       {
         Effect = "Allow"
@@ -251,9 +266,25 @@ resource "aws_iam_role_policy" "lambda_s3_presign" {
   })
 }
 
+resource "aws_dynamodb_table" "presign_rate_limit" {
+  name         = "${local.lambda_name}-rate-limit"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "rate_key"
+
+  attribute {
+    name = "rate_key"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "expires_at"
+    enabled        = true
+  }
+}
+
 data "archive_file" "lambda_presign" {
   type        = "zip"
-  source_dir  = "${path.module}/lambda/presign"
+  source_dir  = "${path.module}/presign"
   output_path = "${path.module}/.build/presign.zip"
 }
 
@@ -278,12 +309,16 @@ resource "aws_lambda_function" "presign" {
       BUCKET_NAME            = aws_s3_bucket.media.id
       RATE_LIMIT_PER_MINUTE  = tostring(var.lambda_rate_limit_per_minute)
       PRESIGN_EXPIRY_SECONDS = "900"
+      MAX_UPLOAD_BYTES       = "104857600"
+      RATE_LIMIT_TABLE       = aws_dynamodb_table.presign_rate_limit.name
+      SUPABASE_URL           = var.supabase_url
+      SUPABASE_ANON_KEY      = var.supabase_anon_key
     }
   }
 }
 
 resource "aws_lambda_function_url" "presign" {
-  function_name      = aws_lambda_function.presign.function_name
+  function_name = aws_lambda_function.presign.function_name
 
   # IAM auth is "NONE" because callers are mobile apps (not browsers/AWS services).
   # Security is enforced at the application layer: BIP-340 schnorr signature
@@ -296,7 +331,7 @@ resource "aws_lambda_function_url" "presign" {
     # Tighten to specific origins before any browser-based client ships.
     allow_origins = ["*"]
     allow_methods = ["POST"]
-    allow_headers = ["Content-Type"]
+    allow_headers = ["Authorization", "Content-Type"]
     max_age       = 86400
   }
 }

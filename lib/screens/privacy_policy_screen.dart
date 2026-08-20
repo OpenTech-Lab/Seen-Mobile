@@ -43,7 +43,8 @@ class _PrivacyContent extends StatelessWidget {
         SizedBox(height: SpotSpacing.xl),
         PolicySection(
           heading: '1. Information We Collect',
-          body: 'We collect the following types of information when you use #seen:\n\n'
+          body:
+              'We collect the following types of information when you use #seen:\n\n'
               '• Account data: username and profile information you provide\n'
               '• Content: photos, videos, and text you post\n'
               '• Location: device location when you grant permission, used for event timelines and the footprint map\n'
@@ -85,7 +86,7 @@ class _PrivacyContent extends StatelessWidget {
         PolicySection(
           heading: '7. Data Retention',
           body:
-              'Your account data and content are retained until you delete your account. Locally cached media can be cleared at any time via Settings > Clear Cache. To request deletion of your account and associated data, contact us at icyanstudio2025@gmail.com.',
+              'Your account data and content are retained until you delete your account. Locally cached media can be cleared at any time via Settings > Clear Cache. To request deletion of your account and associated data, contact us at support@icyanstudio.net.',
         ),
         PolicySection(
           heading: '8. Security',
@@ -95,7 +96,7 @@ class _PrivacyContent extends StatelessWidget {
         PolicySection(
           heading: '9. Your Rights',
           body:
-              'You may access, update, or delete your account and personal data at any time from within the app. For data access requests or erasure requests beyond what the app provides, contact us at icyanstudio2025@gmail.com.',
+              'You may access, update, or delete your account and personal data at any time from within the app. For data access requests or erasure requests beyond what the app provides, contact us at support@icyanstudio.net.',
         ),
         PolicySection(
           heading: '10. Children\'s Privacy',
@@ -110,7 +111,7 @@ class _PrivacyContent extends StatelessWidget {
         PolicySection(
           heading: '12. Contact',
           body:
-              'If you have any questions or concerns about this Privacy Policy or how your data is handled, please contact us:\n\nicyanstudio2025@gmail.com',
+              'If you have any questions or concerns about this Privacy Policy or how your data is handled, please contact us:\n\nsupport@icyanstudio.net',
         ),
       ],
     );
