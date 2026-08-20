@@ -7,6 +7,7 @@ import 'package:mobile/models/posting_quota_status.dart';
 import 'package:mobile/models/wallet_model.dart';
 import 'package:mobile/screens/altcha_gate_screen.dart';
 import 'package:mobile/screens/onboarding_screen.dart';
+import 'package:mobile/screens/recovery_qr_screen.dart';
 import 'package:mobile/services/cache_manager.dart';
 import 'package:mobile/services/follow_service.dart';
 import 'package:mobile/services/local_post_store.dart';
@@ -122,8 +123,16 @@ class _WalletScreenState extends State<WalletScreen> {
       ClipboardData(text: widget.wallet.mnemonic.join(' ')),
     );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.recoveryPhraseCopied)),
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.recoveryPhraseCopied)));
+  }
+
+  Future<void> _showRecoveryQr() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => RecoveryQrScreen(wallet: widget.wallet),
+      ),
     );
   }
 
@@ -178,9 +187,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 future: _postingQuotaFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState != ConnectionState.done) {
-                    return _InlineLoadingState(
-                      label: l10n.checkingDailyLimits,
-                    );
+                    return _InlineLoadingState(label: l10n.checkingDailyLimits);
                   }
 
                   if (snapshot.hasError) {
@@ -250,6 +257,15 @@ class _WalletScreenState extends State<WalletScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: SpotSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _showRecoveryQr,
+                        icon: const Icon(Icons.qr_code_2_rounded),
+                        label: Text(l10n.showRecoveryQrButton),
+                      ),
                     ),
                   ],
                 ],
@@ -417,10 +433,7 @@ class _PostingLimitSummary extends StatelessWidget {
           ),
           const SizedBox(height: SpotSpacing.md),
         ],
-        Text(
-          l10n.postingQuotaDescription,
-          style: SpotType.bodySecondary,
-        ),
+        Text(l10n.postingQuotaDescription, style: SpotType.bodySecondary),
         const SizedBox(height: SpotSpacing.lg),
         _MetaRow(
           label: l10n.tierLabel,

@@ -159,6 +159,45 @@
   "showRecoveryPhraseButton": "Show recovery phrase",
   "@showRecoveryPhraseButton": {},
 
+  "showRecoveryQrButton": "Show recovery QR",
+  "@showRecoveryQrButton": {},
+
+  "recoveryQrTitle": "Recovery QR",
+  "@recoveryQrTitle": {},
+
+  "recoveryQrDescription": "Scan this code on a new device to restore your identity.",
+  "@recoveryQrDescription": {},
+
+  "recoveryQrWarning": "Anyone who can scan this code can control your account. Keep it private.",
+  "@recoveryQrWarning": {},
+
+  "saveRecoveryQrButton": "Save recovery QR",
+  "@saveRecoveryQrButton": {},
+
+  "recoveryQrSaved": "Recovery QR saved to your photos.",
+  "@recoveryQrSaved": {},
+
+  "recoveryQrSaveFailed": "Could not save the recovery QR.",
+  "@recoveryQrSaveFailed": {},
+
+  "scanRecoveryQrButton": "Scan recovery QR",
+  "@scanRecoveryQrButton": {},
+
+  "recoveryQrScannerTitle": "Scan recovery QR",
+  "@recoveryQrScannerTitle": {},
+
+  "recoveryQrScannerHint": "Point the camera at your recovery QR code.",
+  "@recoveryQrScannerHint": {},
+
+  "chooseRecoveryQrImageTooltip": "Choose QR image",
+  "@chooseRecoveryQrImageTooltip": {},
+
+  "recoveryQrNoCodeError": "No recovery QR code found in that image.",
+  "@recoveryQrNoCodeError": {},
+
+  "invalidRecoveryQrError": "That is not a valid #seen recovery QR.",
+  "@invalidRecoveryQrError": {},
+
   "savedWordsButton": "I have saved these words",
   "@savedWordsButton": {},
 

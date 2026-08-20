@@ -50,6 +50,7 @@ void main() {
     expect(find.text('1. alpha'), findsOneWidget);
     expect(find.text('12. lima'), findsOneWidget);
     expect(find.text('Copy phrase'), findsOneWidget);
+    expect(find.text('Show recovery QR'), findsOneWidget);
     expect(find.text('Hide'), findsOneWidget);
   });
 }

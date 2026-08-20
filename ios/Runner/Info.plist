@@ -36,6 +36,8 @@
 	<string>#seen uses your location to geo-tag media and group posts into local events.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>#seen needs photo library access to save and share captured media.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>#seen needs permission to save your recovery QR code to Photos.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -8,6 +8,7 @@ import 'package:mobile/core/wallet.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/wallet_model.dart';
 import 'package:mobile/screens/home_screen.dart';
+import 'package:mobile/screens/recovery_qr_scanner_screen.dart';
 import 'package:mobile/services/storage_service.dart';
 import 'package:mobile/services/user_prefs_service.dart';
 import 'package:mobile/theme/spot_theme.dart';
@@ -98,14 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
     try {
       final wallet = await WalletService.importFromMnemonic(words);
-      await StorageService.instance.saveWallet(wallet);
-      if (mounted) {
-        setState(() {
-          _wallet = wallet;
-          _step = 3;
-          _isLoading = false;
-        });
-      }
+      await _finishWalletImport(wallet);
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -116,6 +110,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         });
       }
     }
+  }
+
+  Future<void> _scanRecoveryQr() async {
+    final payload = await Navigator.of(context).push<String>(
+      MaterialPageRoute<String>(
+        builder: (_) => const RecoveryQrScannerScreen(),
+      ),
+    );
+    if (payload == null || !mounted) return;
+
+    setState(() {
+      _isLoading = true;
+      _importError = '';
+    });
+    try {
+      final wallet = await WalletService.importFromRecoveryPayload(payload);
+      await _finishWalletImport(wallet);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _importError = AppLocalizations.of(context)!.invalidRecoveryQrError;
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _finishWalletImport(WalletModel wallet) async {
+    await StorageService.instance.saveWallet(wallet);
+    if (!mounted) return;
+    setState(() {
+      _wallet = wallet;
+      _step = 3;
+      _isLoading = false;
+    });
   }
 
   void _advanceFromWelcome() {
@@ -164,6 +193,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               onImportToggle: () =>
                   setState(() => _isImporting = !_isImporting),
               onImportSubmit: _importWallet,
+              onScanQr: _scanRecoveryQr,
             ),
             _ => _SuccessStep(
               key: const ValueKey(3),
@@ -264,6 +294,7 @@ class _IdentityStep extends StatelessWidget {
     required this.onCreateTap,
     required this.onImportToggle,
     required this.onImportSubmit,
+    required this.onScanQr,
   });
 
   final bool isImporting;
@@ -273,6 +304,7 @@ class _IdentityStep extends StatelessWidget {
   final VoidCallback onCreateTap;
   final VoidCallback onImportToggle;
   final VoidCallback onImportSubmit;
+  final VoidCallback onScanQr;
 
   @override
   Widget build(BuildContext context) {
@@ -310,6 +342,11 @@ class _IdentityStep extends StatelessWidget {
               onPressed: onImportToggle,
             ),
           ] else ...[
+            _OutlineBtn(
+              label: l10n.scanRecoveryQrButton,
+              onPressed: isLoading ? null : onScanQr,
+            ),
+            const SizedBox(height: SpotSpacing.md),
             TextField(
               controller: importController,
               maxLines: 4,

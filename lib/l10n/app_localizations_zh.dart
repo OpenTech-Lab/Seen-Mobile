@@ -164,6 +164,45 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showRecoveryPhraseButton => '顯示恢復短語';
 
   @override
+  String get showRecoveryQrButton => '顯示恢復 QR 碼';
+
+  @override
+  String get recoveryQrTitle => '恢復 QR 碼';
+
+  @override
+  String get recoveryQrDescription => '在新裝置上掃描此代碼即可恢復您的身份。';
+
+  @override
+  String get recoveryQrWarning => '任何能掃描此代碼的人都可以控制您的帳戶。請妥善保管。';
+
+  @override
+  String get saveRecoveryQrButton => '儲存恢復 QR 碼';
+
+  @override
+  String get recoveryQrSaved => '恢復 QR 碼已儲存到您的照片。';
+
+  @override
+  String get recoveryQrSaveFailed => '無法儲存恢復 QR 碼。';
+
+  @override
+  String get scanRecoveryQrButton => '掃描恢復 QR 碼';
+
+  @override
+  String get recoveryQrScannerTitle => '掃描恢復 QR 碼';
+
+  @override
+  String get recoveryQrScannerHint => '將相機對準恢復 QR 碼。';
+
+  @override
+  String get chooseRecoveryQrImageTooltip => '選擇 QR 圖片';
+
+  @override
+  String get recoveryQrNoCodeError => '在該圖片中找不到恢復 QR 碼。';
+
+  @override
+  String get invalidRecoveryQrError => '這不是有效的 #seen 恢復 QR 碼。';
+
+  @override
   String get savedWordsButton => '我已儲存這些單詞';
 
   @override
@@ -1315,6 +1354,45 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get showRecoveryPhraseButton => '顯示恢復短語';
+
+  @override
+  String get showRecoveryQrButton => '顯示恢復 QR 碼';
+
+  @override
+  String get recoveryQrTitle => '恢復 QR 碼';
+
+  @override
+  String get recoveryQrDescription => '在新裝置上掃描此代碼即可恢復您的身份。';
+
+  @override
+  String get recoveryQrWarning => '任何能掃描此代碼的人都可以控制您的帳戶。請妥善保管。';
+
+  @override
+  String get saveRecoveryQrButton => '儲存恢復 QR 碼';
+
+  @override
+  String get recoveryQrSaved => '恢復 QR 碼已儲存到您的照片。';
+
+  @override
+  String get recoveryQrSaveFailed => '無法儲存恢復 QR 碼。';
+
+  @override
+  String get scanRecoveryQrButton => '掃描恢復 QR 碼';
+
+  @override
+  String get recoveryQrScannerTitle => '掃描恢復 QR 碼';
+
+  @override
+  String get recoveryQrScannerHint => '將相機對準恢復 QR 碼。';
+
+  @override
+  String get chooseRecoveryQrImageTooltip => '選擇 QR 圖片';
+
+  @override
+  String get recoveryQrNoCodeError => '在該圖片中找不到恢復 QR 碼。';
+
+  @override
+  String get invalidRecoveryQrError => '這不是有效的 #seen 恢復 QR 碼。';
 
   @override
   String get savedWordsButton => '我已儲存這些單詞';

@@ -164,6 +164,45 @@ class AppLocalizationsJa extends AppLocalizations {
   String get showRecoveryPhraseButton => 'リカバリーフレーズを表示';
 
   @override
+  String get showRecoveryQrButton => '復元QRコードを表示';
+
+  @override
+  String get recoveryQrTitle => '復元QRコード';
+
+  @override
+  String get recoveryQrDescription => '新しいデバイスでこのコードをスキャンすると、アイデンティティを復元できます。';
+
+  @override
+  String get recoveryQrWarning => 'このコードをスキャンできる人はアカウントを操作できます。安全に保管してください。';
+
+  @override
+  String get saveRecoveryQrButton => '復元QRコードを保存';
+
+  @override
+  String get recoveryQrSaved => '復元QRコードを写真に保存しました。';
+
+  @override
+  String get recoveryQrSaveFailed => '復元QRコードを保存できませんでした。';
+
+  @override
+  String get scanRecoveryQrButton => '復元QRコードをスキャン';
+
+  @override
+  String get recoveryQrScannerTitle => '復元QRコードをスキャン';
+
+  @override
+  String get recoveryQrScannerHint => 'カメラを復元QRコードに向けてください。';
+
+  @override
+  String get chooseRecoveryQrImageTooltip => 'QR画像を選択';
+
+  @override
+  String get recoveryQrNoCodeError => '画像に復元QRコードが見つかりません。';
+
+  @override
+  String get invalidRecoveryQrError => '有効な#seen復元QRコードではありません。';
+
+  @override
   String get savedWordsButton => 'これらの単語を保存しました';
 
   @override

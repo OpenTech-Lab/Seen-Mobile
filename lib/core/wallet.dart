@@ -16,13 +16,18 @@ import 'package:mobile/services/storage_service.dart';
 /// - secp256k1 key-pair generation and deterministic derivation from BIP39 mnemonic
 /// - Nostr event ID computation and ECDSA signing
 /// - Wallet persistence via [StorageService]
-/// - Migration payload creation (encrypted QR data)
+/// - Recovery payload creation and validation for QR backup
 ///
 /// TODO: Replace ECDSA signing with proper Schnorr (BIP340) once a mature
 ///       Dart implementation is available. Nostr uses Schnorr signatures; ECDSA
 ///       is used here as a prototype substitute.
 class WalletService {
   WalletService._();
+
+  /// Prefix for the QR recovery envelope. This identifies the payload format;
+  /// it is not encryption. Anyone who obtains the QR must be treated as
+  /// having the recovery phrase.
+  static const recoveryPayloadPrefix = 'seen-recovery-v1:';
 
   // ── secp256k1 curve parameters ────────────────────────────────────────────
 
@@ -41,7 +46,8 @@ class WalletService {
   /// Derives a key-pair deterministically from [mnemonic] words.
   /// Uses the BIP39 seed (first 32 bytes) as the private key scalar.
   static (String privateKeyHex, String publicKeyHex) keypairFromMnemonic(
-      List<String> mnemonic) {
+    List<String> mnemonic,
+  ) {
     final phrase = mnemonic.join(' ');
     final seedHex = bip39.mnemonicToSeedHex(phrase);
     // Use first 32 bytes of 512-bit BIP39 seed as the private key
@@ -124,7 +130,9 @@ class WalletService {
 
     // rand = tagged_hash("BIP0340/nonce", t ‖ px ‖ msg)
     final rand = _taggedHash(
-        'BIP0340/nonce', Uint8List.fromList([...t, ...px, ...msg]));
+      'BIP0340/nonce',
+      Uint8List.fromList([...t, ...px, ...msg]),
+    );
     var k = _bytesToBigInt(rand) % n;
     if (k == BigInt.zero) k = BigInt.one; // astronomically unlikely
 
@@ -137,7 +145,9 @@ class WalletService {
 
     // e = int(tagged_hash("BIP0340/challenge", rx ‖ px ‖ msg)) mod n
     final eBytes = _taggedHash(
-        'BIP0340/challenge', Uint8List.fromList([...rx, ...px, ...msg]));
+      'BIP0340/challenge',
+      Uint8List.fromList([...rx, ...px, ...msg]),
+    );
     final e = _bytesToBigInt(eBytes) % n;
 
     // sig = rx ‖ (k + e·sk) mod n
@@ -149,8 +159,9 @@ class WalletService {
   static Uint8List _taggedHash(String tag, Uint8List data) {
     final tagBytes = Uint8List.fromList(utf8.encode(tag));
     final tagHash = SHA256Digest().process(tagBytes);
-    return SHA256Digest()
-        .process(Uint8List.fromList([...tagHash, ...tagHash, ...data]));
+    return SHA256Digest().process(
+      Uint8List.fromList([...tagHash, ...tagHash, ...data]),
+    );
   }
 
   /// Signs an arbitrary message string using BIP340 Schnorr.
@@ -209,33 +220,91 @@ class WalletService {
     );
   }
 
-  // ── Migration ─────────────────────────────────────────────────────────────
+  // ── Recovery QR ───────────────────────────────────────────────────────────
 
-  /// Creates an encrypted migration payload for QR display.
-  /// The payload contains the mnemonic and a device attestation proof.
+  /// Creates a versioned recovery envelope for QR display.
   ///
-  /// The AES key is derived from a SHA-256 hash of the private key itself so
-  /// only the key-holder can decrypt it.  In production this should use a
-  /// proper key-derivation function (HKDF / PBKDF2).
-  static Future<String> createMigrationPayload(WalletModel wallet) async {
-    final attestation = await AttestationService.generateAttestationProof();
-
+  /// The mnemonic is intentionally included because it is the portable
+  /// recovery secret. The source device ID is deliberately not used as an
+  /// authenticator: it is not a secret and a restored wallet must receive the
+  /// new device's own ID.
+  static String createRecoveryPayload(WalletModel wallet) {
     final payload = jsonEncode({
+      'type': 'seen-recovery',
+      'version': 1,
       'mnemonic': wallet.mnemonic,
-      'pubkey': wallet.publicKeyHex,
-      'deviceId': wallet.deviceId,
-      'attestation': attestation,
-      'timestamp': DateTime.now().toUtc().toIso8601String(),
+      'publicKey': wallet.publicKeyHex,
     });
 
-    // Derive AES key from private key hash
-    final privBytes = EncryptionUtils.hexToBytes(wallet.privateKeyHex);
-    final aesKey = EncryptionUtils.sha256(privBytes); // 32 bytes
+    return '$recoveryPayloadPrefix${base64Url.encode(utf8.encode(payload))}';
+  }
 
-    final encrypted =
-        EncryptionUtils.aesEncrypt(Uint8List.fromList(utf8.encode(payload)), aesKey);
+  /// Returns whether [raw] looks like a recovery QR created by this app.
+  static bool isRecoveryPayload(String raw) =>
+      raw.trim().startsWith(recoveryPayloadPrefix);
 
-    return base64Url.encode(encrypted);
+  /// Restores a wallet from a recovery QR envelope.
+  ///
+  /// The public key in the envelope is checked against the key derived from
+  /// the mnemonic before the new wallet is created. [createNewWallet]'s normal
+  /// device-attestation path then assigns the current device a fresh ID.
+  static Future<WalletModel> importFromRecoveryPayload(String raw) async {
+    final payload = _decodeRecoveryPayload(raw);
+    if (payload['type'] != 'seen-recovery' || payload['version'] != 1) {
+      throw const FormatException('Unsupported recovery QR format');
+    }
+
+    final rawWords = payload['mnemonic'];
+    if (rawWords is! List || rawWords.length != 12) {
+      throw const FormatException('Recovery QR does not contain 12 words');
+    }
+
+    final words = rawWords
+        .map((word) => word.toString().trim().toLowerCase())
+        .toList(growable: false);
+    if (!validateMnemonic(words)) {
+      throw const FormatException('Recovery QR contains an invalid phrase');
+    }
+
+    final encodedPublicKey = payload['publicKey']?.toString().trim();
+    final (_, derivedPublicKey) = keypairFromMnemonic(words);
+    if (encodedPublicKey != derivedPublicKey) {
+      throw const FormatException('Recovery QR identity check failed');
+    }
+
+    return _buildWallet(words);
+  }
+
+  /// Compatibility shim for callers of the original migration helper.
+  ///
+  /// The old helper produced ciphertext that could not be decrypted on a new
+  /// device because its key came from the secret inside the payload.
+  @Deprecated('Use createRecoveryPayload instead')
+  static Future<String> createMigrationPayload(WalletModel wallet) async {
+    return createRecoveryPayload(wallet);
+  }
+
+  static Map<String, dynamic> _decodeRecoveryPayload(String raw) {
+    final trimmed = raw.trim();
+    if (!isRecoveryPayload(trimmed)) {
+      throw const FormatException('Not a #seen recovery QR');
+    }
+
+    try {
+      final encoded = trimmed.substring(recoveryPayloadPrefix.length);
+      final decoded = utf8.decode(
+        base64Url.decode(base64Url.normalize(encoded)),
+      );
+      final json = jsonDecode(decoded);
+      if (json is! Map) {
+        throw const FormatException('Recovery QR payload is not an object');
+      }
+      return Map<String, dynamic>.from(json);
+    } on FormatException {
+      rethrow;
+    } catch (_) {
+      throw const FormatException('Recovery QR payload is unreadable');
+    }
   }
 
   // ── Nostr public key encoding (simplified bech32) ─────────────────────────

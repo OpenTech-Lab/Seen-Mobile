@@ -401,6 +401,84 @@ abstract class AppLocalizations {
   /// **'Show recovery phrase'**
   String get showRecoveryPhraseButton;
 
+  /// No description provided for @showRecoveryQrButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Show recovery QR'**
+  String get showRecoveryQrButton;
+
+  /// No description provided for @recoveryQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery QR'**
+  String get recoveryQrTitle;
+
+  /// No description provided for @recoveryQrDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan this code on a new device to restore your identity.'**
+  String get recoveryQrDescription;
+
+  /// No description provided for @recoveryQrWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone who can scan this code can control your account. Keep it private.'**
+  String get recoveryQrWarning;
+
+  /// No description provided for @saveRecoveryQrButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save recovery QR'**
+  String get saveRecoveryQrButton;
+
+  /// No description provided for @recoveryQrSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery QR saved to your photos.'**
+  String get recoveryQrSaved;
+
+  /// No description provided for @recoveryQrSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the recovery QR.'**
+  String get recoveryQrSaveFailed;
+
+  /// No description provided for @scanRecoveryQrButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan recovery QR'**
+  String get scanRecoveryQrButton;
+
+  /// No description provided for @recoveryQrScannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan recovery QR'**
+  String get recoveryQrScannerTitle;
+
+  /// No description provided for @recoveryQrScannerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at your recovery QR code.'**
+  String get recoveryQrScannerHint;
+
+  /// No description provided for @chooseRecoveryQrImageTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose QR image'**
+  String get chooseRecoveryQrImageTooltip;
+
+  /// No description provided for @recoveryQrNoCodeError.
+  ///
+  /// In en, this message translates to:
+  /// **'No recovery QR code found in that image.'**
+  String get recoveryQrNoCodeError;
+
+  /// No description provided for @invalidRecoveryQrError.
+  ///
+  /// In en, this message translates to:
+  /// **'That is not a valid #seen recovery QR.'**
+  String get invalidRecoveryQrError;
+
   /// No description provided for @savedWordsButton.
   ///
   /// In en, this message translates to:

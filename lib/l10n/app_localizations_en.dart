@@ -166,6 +166,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showRecoveryPhraseButton => 'Show recovery phrase';
 
   @override
+  String get showRecoveryQrButton => 'Show recovery QR';
+
+  @override
+  String get recoveryQrTitle => 'Recovery QR';
+
+  @override
+  String get recoveryQrDescription =>
+      'Scan this code on a new device to restore your identity.';
+
+  @override
+  String get recoveryQrWarning =>
+      'Anyone who can scan this code can control your account. Keep it private.';
+
+  @override
+  String get saveRecoveryQrButton => 'Save recovery QR';
+
+  @override
+  String get recoveryQrSaved => 'Recovery QR saved to your photos.';
+
+  @override
+  String get recoveryQrSaveFailed => 'Could not save the recovery QR.';
+
+  @override
+  String get scanRecoveryQrButton => 'Scan recovery QR';
+
+  @override
+  String get recoveryQrScannerTitle => 'Scan recovery QR';
+
+  @override
+  String get recoveryQrScannerHint =>
+      'Point the camera at your recovery QR code.';
+
+  @override
+  String get chooseRecoveryQrImageTooltip => 'Choose QR image';
+
+  @override
+  String get recoveryQrNoCodeError =>
+      'No recovery QR code found in that image.';
+
+  @override
+  String get invalidRecoveryQrError => 'That is not a valid #seen recovery QR.';
+
+  @override
   String get savedWordsButton => 'I have saved these words';
 
   @override
