@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'package:mobile/models/identity_model.dart';
 import 'package:mobile/models/wallet_model.dart';
 
 /// Keys used in secure storage.
@@ -13,6 +14,7 @@ class _Keys {
   static const npub = 'wallet_npub';
   static const createdAt = 'wallet_created_at';
   static const isRevoked = 'is_revoked';
+  static const identityVault = 'identity_vault_v1';
 }
 
 /// Secure storage service backed by [FlutterSecureStorage].
@@ -39,16 +41,41 @@ class StorageService {
       _storage.write(key: _Keys.privateKey, value: wallet.privateKeyHex),
       _storage.write(key: _Keys.publicKey, value: wallet.publicKeyHex),
       _storage.write(key: _Keys.npub, value: wallet.npub),
-      _storage.write(
-          key: _Keys.mnemonic, value: jsonEncode(wallet.mnemonic)),
+      _storage.write(key: _Keys.mnemonic, value: jsonEncode(wallet.mnemonic)),
       _storage.write(key: _Keys.deviceId, value: wallet.deviceId),
       _storage.write(
-          key: _Keys.createdAt,
-          value: wallet.createdAt.toIso8601String()),
+        key: _Keys.createdAt,
+        value: wallet.createdAt.toIso8601String(),
+      ),
       _storage.write(
-          key: _Keys.isRevoked,
-          value: wallet.isRevoked ? 'true' : 'false'),
+        key: _Keys.isRevoked,
+        value: wallet.isRevoked ? 'true' : 'false',
+      ),
     ]);
+  }
+
+  /// Persists all local personas in one encrypted secure-storage record.
+  ///
+  /// The vault is intentionally separate from the legacy single-wallet keys
+  /// so existing installs can be migrated without losing their identity.
+  Future<void> saveIdentityVault(IdentityVault vault) async {
+    await _storage.write(
+      key: _Keys.identityVault,
+      value: jsonEncode(vault.toJson()),
+    );
+  }
+
+  /// Loads the multi-identity vault, if this install has one.
+  Future<IdentityVault?> loadIdentityVault() async {
+    final raw = await _storage.read(key: _Keys.identityVault);
+    if (raw == null || raw.trim().isEmpty) return null;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return null;
+      return IdentityVault.fromJson(Map<String, dynamic>.from(decoded));
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Loads the stored wallet.  Returns null if no wallet has been saved yet.
@@ -94,6 +121,7 @@ class StorageService {
       _storage.delete(key: _Keys.deviceId),
       _storage.delete(key: _Keys.createdAt),
       _storage.delete(key: _Keys.isRevoked),
+      _storage.delete(key: _Keys.identityVault),
     ]);
   }
 

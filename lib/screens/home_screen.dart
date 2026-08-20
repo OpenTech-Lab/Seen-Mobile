@@ -8,6 +8,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/core/tag_normalizer.dart';
 import 'package:mobile/features/event/event_repository.dart';
 import 'package:mobile/features/event/event_screen.dart';
+import 'package:mobile/features/metadata/metadata_service.dart';
 import 'package:mobile/features/p2p/p2p_service.dart';
 import 'package:mobile/models/event_model.dart';
 import 'package:mobile/models/wallet_model.dart';
@@ -16,6 +17,7 @@ import 'package:mobile/screens/feed_screen.dart';
 import 'package:mobile/screens/post_composer_screen.dart';
 import 'package:mobile/screens/profile_screen.dart';
 import 'package:mobile/services/follow_service.dart';
+import 'package:mobile/services/identity_vault_service.dart';
 import 'package:mobile/theme/spot_theme.dart';
 import 'package:mobile/widgets/tabbed_screen_chrome.dart';
 
@@ -89,14 +91,19 @@ class HomeScreen extends StatefulWidget {
 class HomeScreenState extends State<HomeScreen> {
   int _selectedTab = 0;
   late final EventRepository _eventRepo;
-  final _feedKey = GlobalKey<FeedScreenState>();
-  final _profileKey = GlobalKey<ProfileScreenState>();
+  late WalletModel _activeWallet;
+  late GlobalKey<FeedScreenState> _feedKey;
+  late GlobalKey<ProfileScreenState> _profileKey;
+  late List<Widget> _tabs;
+  bool _isSwitchingIdentity = false;
 
   @override
   void initState() {
     super.initState();
+    _activeWallet = widget.wallet;
     _eventRepo = EventRepository();
-    P2PService.instance.configure(wallet: widget.wallet);
+    _buildTabs();
+    P2PService.instance.configure(wallet: _activeWallet);
     unawaited(P2PService.instance.refreshTransportAvailability());
   }
 
@@ -113,22 +120,69 @@ class HomeScreenState extends State<HomeScreen> {
     await _profileKey.currentState?.triggerRefresh();
   }
 
-  // Tabs built once and preserved via IndexedStack
-  late final List<Widget> _tabs = [
-    FeedScreen(key: _feedKey, wallet: widget.wallet, eventRepo: _eventRepo),
-    DiscoverScreen(wallet: widget.wallet),
-    _EventsListTab(eventRepo: _eventRepo, wallet: widget.wallet),
-    ProfileScreen(
-      key: _profileKey,
-      wallet: widget.wallet,
-      eventRepo: _eventRepo,
-    ),
-  ];
+  void _buildTabs() {
+    _feedKey = GlobalKey<FeedScreenState>();
+    _profileKey = GlobalKey<ProfileScreenState>();
+    _tabs = [
+      FeedScreen(key: _feedKey, wallet: _activeWallet, eventRepo: _eventRepo),
+      DiscoverScreen(wallet: _activeWallet),
+      _EventsListTab(eventRepo: _eventRepo, wallet: _activeWallet),
+      ProfileScreen(
+        key: _profileKey,
+        wallet: _activeWallet,
+        eventRepo: _eventRepo,
+        onWalletChanged: (wallet) => unawaited(_switchIdentity(wallet)),
+      ),
+    ];
+  }
+
+  Future<void> _switchIdentity(WalletModel nextWallet) async {
+    if (_isSwitchingIdentity ||
+        nextWallet.publicKeyHex == _activeWallet.publicKeyHex) {
+      return;
+    }
+
+    final previousWallet = _activeWallet;
+    setState(() => _isSwitchingIdentity = true);
+    try {
+      // Stop the old persona's local peer announcement while its session is
+      // still active, then restore/create the target persona's cloud session.
+      await P2PService.instance.stopSwarm();
+      await MetadataService.instance.activateWalletSession(nextWallet);
+      await IdentityVaultService.instance.switchIdentity(
+        nextWallet.publicKeyHex,
+      );
+      if (!mounted) return;
+      setState(() {
+        _activeWallet = nextWallet;
+        _selectedTab = 3;
+        _buildTabs();
+        _isSwitchingIdentity = false;
+      });
+      P2PService.instance.configure(wallet: _activeWallet);
+      unawaited(P2PService.instance.refreshTransportAvailability());
+    } catch (error) {
+      debugPrint('[HomeScreen] Identity switch failed: $error');
+      P2PService.instance.configure(wallet: previousWallet);
+      unawaited(P2PService.instance.refreshTransportAvailability());
+      if (!mounted) return;
+      setState(() => _isSwitchingIdentity = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            )!.identitySwitchFailed(error.toString()),
+          ),
+        ),
+      );
+    }
+  }
 
   void _openComposer() {
     showPostComposer(
       context,
-      wallet: widget.wallet,
+      wallet: _activeWallet,
       eventRepo: _eventRepo,
       onPublished: (post) {
         if (!mounted) return;

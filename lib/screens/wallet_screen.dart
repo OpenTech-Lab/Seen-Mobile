@@ -10,8 +10,8 @@ import 'package:mobile/screens/onboarding_screen.dart';
 import 'package:mobile/screens/recovery_qr_screen.dart';
 import 'package:mobile/services/cache_manager.dart';
 import 'package:mobile/services/follow_service.dart';
+import 'package:mobile/services/identity_vault_service.dart';
 import 'package:mobile/services/local_post_store.dart';
-import 'package:mobile/services/storage_service.dart';
 import 'package:mobile/services/user_prefs_service.dart';
 import 'package:mobile/theme/spot_theme.dart';
 
@@ -92,22 +92,40 @@ class _WalletScreenState extends State<WalletScreen> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _isDeletingAccount = true);
     try {
+      final identity = IdentityVaultService.instance.activeIdentity;
+      final isPrimary = identity?.isPrimary ?? true;
       await MetadataService.instance.deleteCurrentAccount();
-      await Future.wait([
-        CacheManager.instance.purgeAll(),
-        CacheManager.instance.clearBlocklist(),
-        LocalPostStore.instance.clearAll(),
-        FollowService.instance.clearAll(),
-        UserPrefsService.instance.clearAll(),
-        StorageService.instance.deleteWallet(),
-      ]);
+      if (isPrimary) {
+        await Future.wait([
+          CacheManager.instance.purgeAll(),
+          CacheManager.instance.clearBlocklist(),
+          LocalPostStore.instance.clearAll(),
+          FollowService.instance.clearAll(),
+          UserPrefsService.instance.clearAll(),
+          IdentityVaultService.instance.clear(),
+        ]);
+      } else {
+        await Future.wait([
+          LocalPostStore.instance.removePostsByAuthor(
+            widget.wallet.publicKeyHex,
+          ),
+          IdentityVaultService.instance.removeIdentity(
+            widget.wallet.publicKeyHex,
+          ),
+        ]);
+      }
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute<void>(
-          builder: (_) => const AltchaGateScreen(next: OnboardingScreen()),
-        ),
-        (route) => false,
-      );
+      if (isPrimary) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute<void>(
+            builder: (_) => const AltchaGateScreen(next: OnboardingScreen()),
+          ),
+          (route) => false,
+        );
+      } else {
+        final owner = IdentityVaultService.instance.currentVault?.ownerIdentity;
+        Navigator.of(context).pop(owner?.wallet);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

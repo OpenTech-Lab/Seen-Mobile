@@ -5,7 +5,7 @@ import 'package:mobile/services/app_data_reset_service.dart';
 import 'package:mobile/services/cache_manager.dart';
 import 'package:mobile/services/follow_service.dart';
 import 'package:mobile/services/local_post_store.dart';
-import 'package:mobile/services/storage_service.dart';
+import 'package:mobile/services/identity_vault_service.dart';
 import 'package:mobile/services/user_prefs_service.dart';
 
 class SessionLogoutService {
@@ -29,7 +29,7 @@ class SessionLogoutService {
         LocalPostStore.instance.clearAll(force: true),
         FollowService.instance.clearAll(),
         UserPrefsService.instance.clearAll(),
-        StorageService.instance.deleteWallet(),
+        IdentityVaultService.instance.clear(),
       ]);
       AppDataResetService.instance.notifyLocalDataCleared();
     });

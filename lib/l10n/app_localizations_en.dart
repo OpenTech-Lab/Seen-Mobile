@@ -232,6 +232,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountLabel => 'Account';
 
   @override
+  String get identitiesLabel => 'Identities';
+
+  @override
+  String get switchIdentityTitle => 'Switch identity';
+
+  @override
+  String get switchIdentitySubtitle =>
+      'Keep personal, company, studio, and brand identities separate on this device.';
+
+  @override
+  String get identitySwitcherSecurityNote =>
+      'Each identity has its own keypair. Never share your main identity\'s recovery phrase.';
+
+  @override
+  String get mainIdentityLabel => 'Main identity';
+
+  @override
+  String get activeIdentityLabel => 'Active';
+
+  @override
+  String get addIdentityButton => 'Add identity';
+
+  @override
+  String get addIdentityTitle => 'Add identity';
+
+  @override
+  String get identityNameLabel => 'Identity name';
+
+  @override
+  String get identityNameHint => 'Personal, Studio, Brand…';
+
+  @override
+  String get identityTypeLabel => 'Type';
+
+  @override
+  String get personalIdentityType => 'Personal';
+
+  @override
+  String get companyIdentityType => 'Company';
+
+  @override
+  String get studioIdentityType => 'Studio';
+
+  @override
+  String get brandIdentityType => 'Brand';
+
+  @override
+  String get customIdentityType => 'Custom';
+
+  @override
+  String removeIdentityTitle(String name) {
+    return 'Remove $name?';
+  }
+
+  @override
+  String get removeIdentityContent =>
+      'This removes the identity and its recovery secret from this device. Remote data is not deleted.';
+
+  @override
+  String get removeIdentityButton => 'Remove identity';
+
+  @override
+  String get identityVaultUnavailable =>
+      'No local identity vault is available.';
+
+  @override
+  String identitySwitchFailed(String error) {
+    return 'Could not switch identity: $error';
+  }
+
+  @override
   String get createdLabel => 'Created';
 
   @override

@@ -12,6 +12,7 @@ import 'package:mobile/models/wallet_model.dart';
 import 'package:mobile/screens/altcha_gate_screen.dart';
 import 'package:mobile/screens/asset_transport_settings_screen.dart';
 import 'package:mobile/screens/interests_screen.dart';
+import 'package:mobile/screens/identity_switcher_screen.dart';
 import 'package:mobile/screens/my_posts_screen.dart';
 import 'package:mobile/screens/blocked_users_screen.dart';
 import 'package:mobile/screens/onboarding_screen.dart';
@@ -256,6 +257,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<void> _openIdentitySwitcher() async {
+    final nextWallet = await Navigator.of(context).push<WalletModel>(
+      MaterialPageRoute(builder: (_) => const IdentitySwitcherScreen()),
+    );
+    if (nextWallet != null && mounted) {
+      Navigator.of(context).pop<WalletModel>(nextWallet);
+    }
+  }
+
+  Future<void> _openAccount() async {
+    final nextWallet = await Navigator.of(context).push<WalletModel>(
+      MaterialPageRoute(builder: (_) => WalletScreen(wallet: widget.wallet)),
+    );
+    if (nextWallet != null && mounted) {
+      Navigator.of(context).pop<WalletModel>(nextWallet);
     }
   }
 
@@ -618,11 +637,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _SettingsRow(
             icon: CupertinoIcons.person_crop_circle,
             label: l10n.accountLabel,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => WalletScreen(wallet: widget.wallet),
-              ),
-            ),
+            onTap: _openAccount,
+          ),
+          const SizedBox(height: SpotSpacing.sm),
+          _SettingsRow(
+            icon: CupertinoIcons.person_2,
+            label: l10n.identitiesLabel,
+            onTap: _openIdentitySwitcher,
           ),
           const SizedBox(height: SpotSpacing.sm),
           _SettingsRow(

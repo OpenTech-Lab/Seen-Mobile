@@ -137,7 +137,11 @@ class P2PService {
       await server.close(force: true);
     }
     if (wallet != null) {
-      unawaited(MetadataService.instance.clearPeerEndpoints(wallet));
+      try {
+        await MetadataService.instance.clearPeerEndpoints(wallet);
+      } catch (error) {
+        debugPrint('[P2PService] Failed to clear peer endpoints: $error');
+      }
     }
   }
 

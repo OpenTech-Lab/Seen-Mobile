@@ -225,6 +225,76 @@ class AppLocalizationsJa extends AppLocalizations {
   String get accountLabel => 'アカウント';
 
   @override
+  String get identitiesLabel => 'アイデンティティ';
+
+  @override
+  String get switchIdentityTitle => 'アイデンティティを切り替え';
+
+  @override
+  String get switchIdentitySubtitle =>
+      '個人、会社、スタジオ、ブランドのアイデンティティをこのデバイスで分けて管理します。';
+
+  @override
+  String get identitySwitcherSecurityNote =>
+      '各アイデンティティには固有のキーペアがあります。メインアイデンティティのリカバリーフレーズは共有しないでください。';
+
+  @override
+  String get mainIdentityLabel => 'メインアイデンティティ';
+
+  @override
+  String get activeIdentityLabel => '使用中';
+
+  @override
+  String get addIdentityButton => 'アイデンティティを追加';
+
+  @override
+  String get addIdentityTitle => 'アイデンティティを追加';
+
+  @override
+  String get identityNameLabel => 'アイデンティティ名';
+
+  @override
+  String get identityNameHint => '個人、スタジオ、ブランド…';
+
+  @override
+  String get identityTypeLabel => '種類';
+
+  @override
+  String get personalIdentityType => '個人';
+
+  @override
+  String get companyIdentityType => '会社';
+
+  @override
+  String get studioIdentityType => 'スタジオ';
+
+  @override
+  String get brandIdentityType => 'ブランド';
+
+  @override
+  String get customIdentityType => 'カスタム';
+
+  @override
+  String removeIdentityTitle(String name) {
+    return '$nameを削除しますか？';
+  }
+
+  @override
+  String get removeIdentityContent =>
+      'このデバイスからアイデンティティと復元用秘密情報を削除します。リモートデータは削除されません。';
+
+  @override
+  String get removeIdentityButton => 'アイデンティティを削除';
+
+  @override
+  String get identityVaultUnavailable => 'ローカルのアイデンティティ保管庫がありません。';
+
+  @override
+  String identitySwitchFailed(String error) {
+    return 'アイデンティティを切り替えられませんでした: $error';
+  }
+
+  @override
   String get createdLabel => '作成日';
 
   @override

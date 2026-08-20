@@ -225,6 +225,73 @@ class AppLocalizationsZh extends AppLocalizations {
   String get accountLabel => '帳戶';
 
   @override
+  String get identitiesLabel => '身份';
+
+  @override
+  String get switchIdentityTitle => '切換身份';
+
+  @override
+  String get switchIdentitySubtitle => '在此裝置上分開管理個人、公司、工作室和品牌身份。';
+
+  @override
+  String get identitySwitcherSecurityNote => '每個身份都有自己的金鑰對。請勿分享主要身份的恢復短語。';
+
+  @override
+  String get mainIdentityLabel => '主要身份';
+
+  @override
+  String get activeIdentityLabel => '使用中';
+
+  @override
+  String get addIdentityButton => '新增身份';
+
+  @override
+  String get addIdentityTitle => '新增身份';
+
+  @override
+  String get identityNameLabel => '身份名稱';
+
+  @override
+  String get identityNameHint => '個人、工作室、品牌…';
+
+  @override
+  String get identityTypeLabel => '類型';
+
+  @override
+  String get personalIdentityType => '個人';
+
+  @override
+  String get companyIdentityType => '公司';
+
+  @override
+  String get studioIdentityType => '工作室';
+
+  @override
+  String get brandIdentityType => '品牌';
+
+  @override
+  String get customIdentityType => '自訂';
+
+  @override
+  String removeIdentityTitle(String name) {
+    return '移除$name？';
+  }
+
+  @override
+  String get removeIdentityContent => '這會從此裝置移除身份及其恢復秘密。遠端資料不會被刪除。';
+
+  @override
+  String get removeIdentityButton => '移除身份';
+
+  @override
+  String get identityVaultUnavailable => '找不到本機身份保管庫。';
+
+  @override
+  String identitySwitchFailed(String error) {
+    return '無法切換身份：$error';
+  }
+
+  @override
   String get createdLabel => '建立時間';
 
   @override
@@ -1415,6 +1482,73 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get accountLabel => '帳戶';
+
+  @override
+  String get identitiesLabel => '身份';
+
+  @override
+  String get switchIdentityTitle => '切換身份';
+
+  @override
+  String get switchIdentitySubtitle => '在此裝置上分開管理個人、公司、工作室和品牌身份。';
+
+  @override
+  String get identitySwitcherSecurityNote => '每個身份都有自己的金鑰對。請勿分享主要身份的恢復短語。';
+
+  @override
+  String get mainIdentityLabel => '主要身份';
+
+  @override
+  String get activeIdentityLabel => '使用中';
+
+  @override
+  String get addIdentityButton => '新增身份';
+
+  @override
+  String get addIdentityTitle => '新增身份';
+
+  @override
+  String get identityNameLabel => '身份名稱';
+
+  @override
+  String get identityNameHint => '個人、工作室、品牌…';
+
+  @override
+  String get identityTypeLabel => '類型';
+
+  @override
+  String get personalIdentityType => '個人';
+
+  @override
+  String get companyIdentityType => '公司';
+
+  @override
+  String get studioIdentityType => '工作室';
+
+  @override
+  String get brandIdentityType => '品牌';
+
+  @override
+  String get customIdentityType => '自訂';
+
+  @override
+  String removeIdentityTitle(String name) {
+    return '移除$name？';
+  }
+
+  @override
+  String get removeIdentityContent => '這會從此裝置移除身份及其恢復秘密。遠端資料不會被刪除。';
+
+  @override
+  String get removeIdentityButton => '移除身份';
+
+  @override
+  String get identityVaultUnavailable => '找不到本機身份保管庫。';
+
+  @override
+  String identitySwitchFailed(String error) {
+    return '無法切換身份：$error';
+  }
 
   @override
   String get createdLabel => '建立時間';

@@ -11,7 +11,7 @@ import 'package:mobile/screens/session_gate_screen.dart';
 import 'package:mobile/services/app_lock_service.dart';
 import 'package:mobile/services/cache_manager.dart';
 import 'package:mobile/services/geo_lookup.dart';
-import 'package:mobile/services/storage_service.dart';
+import 'package:mobile/services/identity_vault_service.dart';
 import 'package:mobile/services/user_prefs_service.dart';
 import 'package:mobile/theme/spot_theme.dart';
 import 'package:mobile/widgets/dismiss_keyboard_on_tap.dart';
@@ -46,7 +46,7 @@ Future<void> main() async {
     ),
   );
 
-  final wallet = await StorageService.instance.loadWallet();
+  final wallet = await IdentityVaultService.instance.loadActiveWallet();
   runApp(SpotApp(initialWallet: wallet));
 }
 

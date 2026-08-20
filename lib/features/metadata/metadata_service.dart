@@ -11,6 +11,7 @@ import 'package:mobile/models/posting_quota_status.dart';
 import 'package:mobile/models/profile_model.dart';
 import 'package:mobile/models/wallet_model.dart';
 import 'package:mobile/models/witness_model.dart';
+import 'package:mobile/services/identity_vault_service.dart';
 
 bool isDeleteAlreadyGoneError(PostgrestException error) {
   final message = error.message.trim().toLowerCase();
@@ -103,6 +104,51 @@ class MetadataService {
     });
   }
 
+  /// Activates the Supabase session associated with a local persona.
+  ///
+  /// The current backend still gives each anonymous persona its own
+  /// `auth.uid()`. Keeping the refresh token in the encrypted local vault
+  /// prevents switching back and forth on the same device from creating a
+  /// fresh, disconnected anonymous profile every time.
+  Future<void> activateWalletSession(WalletModel wallet) async {
+    final vaultService = IdentityVaultService.instance;
+    final previousIdentity = vaultService.activeIdentity;
+    final currentRefreshToken = client.auth.currentSession?.refreshToken;
+    if (previousIdentity != null &&
+        currentRefreshToken != null &&
+        previousIdentity.wallet.publicKeyHex != wallet.publicKeyHex) {
+      await vaultService.saveAuthRefreshToken(
+        identityId: previousIdentity.id,
+        refreshToken: currentRefreshToken,
+      );
+    }
+
+    final targetRefreshToken = await vaultService.authRefreshTokenFor(
+      wallet.publicKeyHex,
+    );
+    var restoredTargetSession = false;
+    if (targetRefreshToken != null && targetRefreshToken.isNotEmpty) {
+      try {
+        final response = await client.auth.setSession(targetRefreshToken);
+        restoredTargetSession = response.user != null;
+      } on AuthException catch (error) {
+        debugPrint(
+          '[MetadataService] Saved persona session could not be restored: '
+          '${error.message}',
+        );
+      }
+    }
+
+    if (!restoredTargetSession &&
+        previousIdentity != null &&
+        previousIdentity.wallet.publicKeyHex != wallet.publicKeyHex &&
+        client.auth.currentUser != null) {
+      await client.auth.signOut();
+    }
+
+    await syncLegacyProfile(wallet);
+  }
+
   Future<void> syncLegacyProfile(WalletModel wallet) async {
     return _profileSyncFlight.run(() async {
       final user = await _ensureSignedInForWallet(wallet);
@@ -110,10 +156,13 @@ class MetadataService {
         throw StateError('Unable to create a Supabase auth session');
       }
       final existingProfile = await _fetchProfileById(user.id);
+      final localIdentity = IdentityVaultService.instance.identityFor(
+        wallet.publicKeyHex,
+      );
       final displayName =
           existingProfile?.displayName?.trim().isNotEmpty == true
           ? existingProfile!.displayName!.trim()
-          : _defaultDisplayNameForWallet(wallet);
+          : localIdentity?.label ?? _defaultDisplayNameForWallet(wallet);
       final avatarSeed = existingProfile?.avatarSeed?.trim().isNotEmpty == true
           ? existingProfile!.avatarSeed!.trim()
           : wallet.publicKeyHex.substring(0, 12);
@@ -131,6 +180,7 @@ class MetadataService {
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         }, onConflict: 'id');
         await _upsertPrivateDeviceId(user.id, wallet.deviceId);
+        await _rememberWalletSession(wallet);
         debugPrint('[MetadataService] Profile sync complete for ${user.id}');
       } on PostgrestException catch (error, stackTrace) {
         debugPrint(
@@ -862,6 +912,15 @@ class MetadataService {
       'device_id': deviceId,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }, onConflict: 'user_id');
+  }
+
+  Future<void> _rememberWalletSession(WalletModel wallet) async {
+    final refreshToken = client.auth.currentSession?.refreshToken;
+    if (refreshToken == null || refreshToken.isEmpty) return;
+    await IdentityVaultService.instance.saveAuthRefreshToken(
+      identityId: wallet.publicKeyHex,
+      refreshToken: refreshToken,
+    );
   }
 
   String _escapeLikePattern(String value) => value

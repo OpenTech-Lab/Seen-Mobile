@@ -17,6 +17,7 @@ import 'package:mobile/models/media_post.dart';
 import 'package:mobile/models/profile_model.dart';
 import 'package:mobile/models/wallet_model.dart';
 import 'package:mobile/screens/discover_screen.dart';
+import 'package:mobile/screens/identity_switcher_screen.dart';
 import 'package:mobile/screens/post_composer_screen.dart';
 import 'package:mobile/screens/settings_screen.dart';
 import 'package:mobile/screens/thread_screen.dart';
@@ -46,10 +47,12 @@ class ProfileScreen extends StatefulWidget {
     super.key,
     required this.wallet,
     required this.eventRepo,
+    this.onWalletChanged,
   });
 
   final WalletModel wallet;
   final EventRepository eventRepo;
+  final ValueChanged<WalletModel>? onWalletChanged;
 
   @override
   State<ProfileScreen> createState() => ProfileScreenState();
@@ -325,9 +328,9 @@ class ProfileScreenState extends State<ProfileScreen>
     if (post.isPendingRetry) {
       await _purgePostCache(post);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.removedLocalPost)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.removedLocalPost)));
       }
       return;
     }
@@ -339,9 +342,9 @@ class ProfileScreenState extends State<ProfileScreen>
       );
       await _purgePostCache(post);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.postDeleted)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.postDeleted)));
       }
     } catch (e) {
       await LocalPostStore.instance.savePost(post);
@@ -409,9 +412,9 @@ class ProfileScreenState extends State<ProfileScreen>
         _retryingPostIds.remove(post.id);
         _posts = replacePostsById(_posts, [failed]);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.retryFailed)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.retryFailed)));
     }
   }
 
@@ -427,17 +430,29 @@ class ProfileScreenState extends State<ProfileScreen>
       // Also block locally so it disappears from this user's feed
       setState(() => _posts = _posts.where((p) => p.id != post.id).toList());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.reportedContentHidden)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reportedContentHidden)));
       }
     } catch (_) {}
   }
 
-  void _openSettings() {
-    Navigator.of(context).push(
+  Future<void> _openSettings() async {
+    final nextWallet = await Navigator.of(context).push<WalletModel>(
       MaterialPageRoute(builder: (_) => SettingsScreen(wallet: widget.wallet)),
     );
+    if (nextWallet != null && mounted) {
+      widget.onWalletChanged?.call(nextWallet);
+    }
+  }
+
+  Future<void> _openIdentitySwitcher() async {
+    final nextWallet = await Navigator.of(context).push<WalletModel>(
+      MaterialPageRoute(builder: (_) => const IdentitySwitcherScreen()),
+    );
+    if (nextWallet != null && mounted) {
+      widget.onWalletChanged?.call(nextWallet);
+    }
   }
 
   void _openDiscoverTag(BuildContext ctx, String tag) {
@@ -527,10 +542,7 @@ class ProfileScreenState extends State<ProfileScreen>
                   ),
                   const SizedBox(height: SpotSpacing.sm),
                   Center(
-                    child: Text(
-                      l10n.tapAvatarHint,
-                      style: SpotType.caption,
-                    ),
+                    child: Text(l10n.tapAvatarHint, style: SpotType.caption),
                   ),
                   const SizedBox(height: SpotSpacing.lg),
                   TextField(
@@ -541,8 +553,7 @@ class ProfileScreenState extends State<ProfileScreen>
                       labelText: l10n.usernameFieldLabel,
                       hintText: l10n.usernameFieldHint,
                     ),
-                    onTapOutside: (_) =>
-                        FocusScope.of(sheetContext).unfocus(),
+                    onTapOutside: (_) => FocusScope.of(sheetContext).unfocus(),
                   ),
                   const SizedBox(height: SpotSpacing.md),
                   TextField(
@@ -562,8 +573,7 @@ class ProfileScreenState extends State<ProfileScreen>
                           ? l10n.descriptionTooLongError
                           : null,
                     ),
-                    onTapOutside: (_) =>
-                        FocusScope.of(sheetContext).unfocus(),
+                    onTapOutside: (_) => FocusScope.of(sheetContext).unfocus(),
                   ),
                   const SizedBox(height: SpotSpacing.lg),
                   SizedBox(
@@ -580,7 +590,9 @@ class ProfileScreenState extends State<ProfileScreen>
                               );
                             },
                       child: Text(
-                        _isSavingProfile ? l10n.savingLabel : l10n.saveProfileButton,
+                        _isSavingProfile
+                            ? l10n.savingLabel
+                            : l10n.saveProfileButton,
                       ),
                     ),
                   ),
@@ -682,9 +694,9 @@ class ProfileScreenState extends State<ProfileScreen>
       ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.failedUpdateProfile(e.toString()))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.failedUpdateProfile(e.toString()))),
+      );
     } finally {
       if (mounted) setState(() => _isSavingProfile = false);
     }
@@ -731,6 +743,12 @@ class ProfileScreenState extends State<ProfileScreen>
         backgroundColor: SpotColors.bg,
         title: Text(l10n.profileTitle, style: SpotType.subheading),
         actions: [
+          IconButton(
+            icon: const Icon(CupertinoIcons.person_2, size: 20),
+            color: SpotColors.textSecondary,
+            tooltip: l10n.switchIdentityTitle,
+            onPressed: _openIdentitySwitcher,
+          ),
           IconButton(
             icon: const Icon(CupertinoIcons.settings, size: 20),
             color: SpotColors.textSecondary,
@@ -939,7 +957,9 @@ class _ProfileHeader extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: isSavingProfile ? null : onEdit,
-              child: Text(isSavingProfile ? l10n.savingLabel : l10n.editProfileTitle),
+              child: Text(
+                isSavingProfile ? l10n.savingLabel : l10n.editProfileTitle,
+              ),
             ),
           ),
         ],

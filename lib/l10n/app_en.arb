@@ -219,6 +219,77 @@
   "accountLabel": "Account",
   "@accountLabel": {},
 
+  "identitiesLabel": "Identities",
+  "@identitiesLabel": {},
+
+  "switchIdentityTitle": "Switch identity",
+  "@switchIdentityTitle": {},
+
+  "switchIdentitySubtitle": "Keep personal, company, studio, and brand identities separate on this device.",
+  "@switchIdentitySubtitle": {},
+
+  "identitySwitcherSecurityNote": "Each identity has its own keypair. Never share your main identity's recovery phrase.",
+  "@identitySwitcherSecurityNote": {},
+
+  "mainIdentityLabel": "Main identity",
+  "@mainIdentityLabel": {},
+
+  "activeIdentityLabel": "Active",
+  "@activeIdentityLabel": {},
+
+  "addIdentityButton": "Add identity",
+  "@addIdentityButton": {},
+
+  "addIdentityTitle": "Add identity",
+  "@addIdentityTitle": {},
+
+  "identityNameLabel": "Identity name",
+  "@identityNameLabel": {},
+
+  "identityNameHint": "Personal, Studio, Brand…",
+  "@identityNameHint": {},
+
+  "identityTypeLabel": "Type",
+  "@identityTypeLabel": {},
+
+  "personalIdentityType": "Personal",
+  "@personalIdentityType": {},
+
+  "companyIdentityType": "Company",
+  "@companyIdentityType": {},
+
+  "studioIdentityType": "Studio",
+  "@studioIdentityType": {},
+
+  "brandIdentityType": "Brand",
+  "@brandIdentityType": {},
+
+  "customIdentityType": "Custom",
+  "@customIdentityType": {},
+
+  "removeIdentityTitle": "Remove {name}?",
+  "@removeIdentityTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "removeIdentityContent": "This removes the identity and its recovery secret from this device. Remote data is not deleted.",
+  "@removeIdentityContent": {},
+
+  "removeIdentityButton": "Remove identity",
+  "@removeIdentityButton": {},
+
+  "identityVaultUnavailable": "No local identity vault is available.",
+  "@identityVaultUnavailable": {},
+
+  "identitySwitchFailed": "Could not switch identity: {error}",
+  "@identitySwitchFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
   "createdLabel": "Created",
   "@createdLabel": {},
 

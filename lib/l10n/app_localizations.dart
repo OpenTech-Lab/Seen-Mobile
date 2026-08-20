@@ -521,6 +521,132 @@ abstract class AppLocalizations {
   /// **'Account'**
   String get accountLabel;
 
+  /// No description provided for @identitiesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Identities'**
+  String get identitiesLabel;
+
+  /// No description provided for @switchIdentityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch identity'**
+  String get switchIdentityTitle;
+
+  /// No description provided for @switchIdentitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep personal, company, studio, and brand identities separate on this device.'**
+  String get switchIdentitySubtitle;
+
+  /// No description provided for @identitySwitcherSecurityNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Each identity has its own keypair. Never share your main identity\'s recovery phrase.'**
+  String get identitySwitcherSecurityNote;
+
+  /// No description provided for @mainIdentityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Main identity'**
+  String get mainIdentityLabel;
+
+  /// No description provided for @activeIdentityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activeIdentityLabel;
+
+  /// No description provided for @addIdentityButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add identity'**
+  String get addIdentityButton;
+
+  /// No description provided for @addIdentityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add identity'**
+  String get addIdentityTitle;
+
+  /// No description provided for @identityNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity name'**
+  String get identityNameLabel;
+
+  /// No description provided for @identityNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal, Studio, Brand…'**
+  String get identityNameHint;
+
+  /// No description provided for @identityTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get identityTypeLabel;
+
+  /// No description provided for @personalIdentityType.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get personalIdentityType;
+
+  /// No description provided for @companyIdentityType.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get companyIdentityType;
+
+  /// No description provided for @studioIdentityType.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio'**
+  String get studioIdentityType;
+
+  /// No description provided for @brandIdentityType.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get brandIdentityType;
+
+  /// No description provided for @customIdentityType.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get customIdentityType;
+
+  /// No description provided for @removeIdentityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}?'**
+  String removeIdentityTitle(String name);
+
+  /// No description provided for @removeIdentityContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the identity and its recovery secret from this device. Remote data is not deleted.'**
+  String get removeIdentityContent;
+
+  /// No description provided for @removeIdentityButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove identity'**
+  String get removeIdentityButton;
+
+  /// No description provided for @identityVaultUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No local identity vault is available.'**
+  String get identityVaultUnavailable;
+
+  /// No description provided for @identitySwitchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not switch identity: {error}'**
+  String identitySwitchFailed(String error);
+
   /// No description provided for @createdLabel.
   ///
   /// In en, this message translates to:

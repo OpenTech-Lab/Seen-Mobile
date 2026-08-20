@@ -9,7 +9,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/wallet_model.dart';
 import 'package:mobile/screens/home_screen.dart';
 import 'package:mobile/screens/recovery_qr_scanner_screen.dart';
-import 'package:mobile/services/storage_service.dart';
+import 'package:mobile/services/identity_vault_service.dart';
 import 'package:mobile/services/user_prefs_service.dart';
 import 'package:mobile/theme/spot_theme.dart';
 import 'package:mobile/widgets/ugc_terms_gate.dart';
@@ -64,7 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
     try {
       final wallet = await WalletService.createNewWallet();
-      await StorageService.instance.saveWallet(wallet);
+      await IdentityVaultService.instance.initializeWithPrimaryWallet(wallet);
       if (mounted) {
         setState(() {
           _wallet = wallet;
@@ -138,7 +138,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _finishWalletImport(WalletModel wallet) async {
-    await StorageService.instance.saveWallet(wallet);
+    await IdentityVaultService.instance.initializeWithPrimaryWallet(wallet);
     if (!mounted) return;
     setState(() {
       _wallet = wallet;

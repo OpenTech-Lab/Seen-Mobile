@@ -141,6 +141,16 @@ class LocalPostStore {
     });
   }
 
+  Future<void> removePostsByAuthor(String authorPubkey) async {
+    if (_writesPaused) return;
+    await _enqueue(() async {
+      if (_writesPaused) return;
+      final posts = await _readPosts();
+      posts.removeWhere((post) => post.pubkey == authorPubkey);
+      await _writePosts(posts);
+    });
+  }
+
   Future<void> clearAll({bool force = false}) async {
     if (_writesPaused && !force) return;
     await _enqueue(() async {
