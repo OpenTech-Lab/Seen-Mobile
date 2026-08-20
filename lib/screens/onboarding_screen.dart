@@ -341,6 +341,11 @@ class _IdentityStep extends StatelessWidget {
               label: l10n.importExistingButton,
               onPressed: onImportToggle,
             ),
+            const SizedBox(height: SpotSpacing.sm),
+            _OutlineBtn(
+              label: l10n.scanRecoveryQrButton,
+              onPressed: isLoading ? null : onScanQr,
+            ),
           ] else ...[
             _OutlineBtn(
               label: l10n.scanRecoveryQrButton,

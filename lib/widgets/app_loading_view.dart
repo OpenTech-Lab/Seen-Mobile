@@ -19,22 +19,16 @@ class AppLoadingView extends StatelessWidget {
           container: true,
           liveRegion: true,
           label: [title, ?subtitle].join(' '),
-          child: ColorFiltered(
-            colorFilter: const ColorFilter.mode(
-              SpotColors.textPrimary,
-              BlendMode.srcIn,
-            ),
-            child: Image.asset(
-              'assets/logo_transparent.png',
-              width: 52,
-              height: 52,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.radio_button_checked,
-                color: SpotColors.textPrimary,
-                size: 36,
-              ),
+          child: Image.asset(
+            'assets/logo_transparent.png',
+            width: 52,
+            height: 52,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.radio_button_checked,
+              color: SpotColors.textPrimary,
+              size: 36,
             ),
           ),
         ),

@@ -18,6 +18,21 @@ bool isDeleteAlreadyGoneError(PostgrestException error) {
   return error.code == 'P0001' && message == 'post not found for deletion';
 }
 
+/// Returns true when the deployed metadata schema predates the private device
+/// binding table introduced by the security migration.
+///
+/// This keeps older installations usable while the migration is rolled out;
+/// newer installations continue to use `profile_private` exclusively.
+bool isMissingProfilePrivateTableError(PostgrestException error) {
+  final code = error.code?.trim().toUpperCase();
+  final message = error.message.trim().toLowerCase();
+  final isMissingRelation =
+      code == '42P01' ||
+      code == 'PGRST205' ||
+      message.contains('does not exist');
+  return isMissingRelation && message.contains('profile_private');
+}
+
 Map<String, dynamic> buildSoftDeletePostParams({
   required String requestedPostId,
   required String contentHash,
@@ -892,26 +907,77 @@ class MetadataService {
           .limit(1),
     );
     if (rows.isEmpty) return null;
-    final privateRows = List<Map<String, dynamic>>.from(
-      await client
-          .from('profile_private')
-          .select('device_id')
-          .eq('user_id', userId)
-          .limit(1),
-    );
     final row = Map<String, dynamic>.from(rows.first);
-    if (privateRows.isNotEmpty) {
-      row['device_id'] = privateRows.first['device_id'];
+
+    try {
+      final privateRows = List<Map<String, dynamic>>.from(
+        await client
+            .from('profile_private')
+            .select('device_id')
+            .eq('user_id', userId)
+            .limit(1),
+      );
+      if (privateRows.isNotEmpty) {
+        row['device_id'] = privateRows.first['device_id'];
+      }
+    } on PostgrestException catch (error) {
+      if (!isMissingProfilePrivateTableError(error)) rethrow;
+
+      // Before the security migration, device_id lived on profiles. Read it
+      // only as a compatibility fallback; the private table remains the
+      // preferred storage whenever it is available.
+      debugPrint(
+        '[MetadataService] profile_private is unavailable; using legacy '
+        'profiles.device_id compatibility path',
+      );
+      try {
+        final legacyRows = List<Map<String, dynamic>>.from(
+          await client
+              .from('profiles')
+              .select('device_id')
+              .eq('id', userId)
+              .limit(1),
+        );
+        if (legacyRows.isNotEmpty) {
+          row['device_id'] = legacyRows.first['device_id'];
+        }
+      } on PostgrestException catch (legacyError) {
+        // The device binding is optional for profile visibility. Do not make
+        // settings unusable if a partially upgraded schema has no legacy
+        // column either.
+        debugPrint(
+          '[MetadataService] Legacy device_id compatibility read skipped: '
+          '${legacyError.message}',
+        );
+      }
     }
     return ProfileModel.fromRow(row);
   }
 
   Future<void> _upsertPrivateDeviceId(String userId, String deviceId) async {
-    await client.from('profile_private').upsert({
-      'user_id': userId,
-      'device_id': deviceId,
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }, onConflict: 'user_id');
+    try {
+      await client.from('profile_private').upsert({
+        'user_id': userId,
+        'device_id': deviceId,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }, onConflict: 'user_id');
+    } on PostgrestException catch (error) {
+      if (!isMissingProfilePrivateTableError(error)) rethrow;
+
+      // Keep the current app functional against the pre-security schema. The
+      // next migration run moves this value back to profile_private.
+      debugPrint(
+        '[MetadataService] profile_private is unavailable; updating legacy '
+        'profiles.device_id compatibility path',
+      );
+      await client
+          .from('profiles')
+          .update({
+            'device_id': deviceId,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('id', userId);
+    }
   }
 
   Future<void> _rememberWalletSession(WalletModel wallet) async {
