@@ -549,6 +549,7 @@ class _ControlsPanel extends StatelessWidget {
                 vertical: SpotSpacing.sm,
               ),
             ),
+            onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           ),
           const SizedBox(height: SpotSpacing.md),
 
@@ -1059,6 +1060,8 @@ class _PreviewScreenState extends State<_PreviewScreen> {
                           vertical: SpotSpacing.sm,
                         ),
                       ),
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                     );
                   },
                 ),

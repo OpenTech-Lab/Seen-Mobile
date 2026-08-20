@@ -326,6 +326,7 @@ class _IdentityStep extends StatelessWidget {
                   borderSide: BorderSide.none,
                 ),
               ),
+              onTapOutside: (_) => FocusScope.of(context).unfocus(),
             ),
             if (importError.isNotEmpty) ...[
               const SizedBox(height: SpotSpacing.sm),

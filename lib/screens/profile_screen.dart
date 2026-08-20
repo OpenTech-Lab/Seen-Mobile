@@ -541,6 +541,8 @@ class ProfileScreenState extends State<ProfileScreen>
                       labelText: l10n.usernameFieldLabel,
                       hintText: l10n.usernameFieldHint,
                     ),
+                    onTapOutside: (_) =>
+                        FocusScope.of(sheetContext).unfocus(),
                   ),
                   const SizedBox(height: SpotSpacing.md),
                   TextField(
@@ -560,6 +562,8 @@ class ProfileScreenState extends State<ProfileScreen>
                           ? l10n.descriptionTooLongError
                           : null,
                     ),
+                    onTapOutside: (_) =>
+                        FocusScope.of(sheetContext).unfocus(),
                   ),
                   const SizedBox(height: SpotSpacing.lg),
                   SizedBox(

@@ -135,6 +135,7 @@ class _UserReportSheetState extends State<UserReportSheet> {
                   borderSide: BorderSide.none,
                 ),
               ),
+              onTapOutside: (_) => FocusScope.of(context).unfocus(),
             ),
             if (_errorText != null) ...[
               const SizedBox(height: SpotSpacing.sm),

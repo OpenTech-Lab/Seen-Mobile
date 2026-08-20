@@ -192,6 +192,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                       ),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _addCustom(),
+                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
                     ),
                   ),
                 ),
