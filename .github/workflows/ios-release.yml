@@ -6,7 +6,11 @@ on:
 
 jobs:
   deploy:
-    runs-on: macos-15
+    # macos-15 only ships Xcode 16.4 (iOS 18.5 SDK); Apple now rejects
+    # TestFlight uploads built with anything older than the iOS 26 SDK
+    # (Xcode 26+). macos-latest tracks whatever GitHub's current runner
+    # image is, which carries a current Xcode.
+    runs-on: macos-latest
     timeout-minutes: 90
 
     steps:

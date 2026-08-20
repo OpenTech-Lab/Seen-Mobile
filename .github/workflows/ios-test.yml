@@ -5,7 +5,9 @@ on:
 
 jobs:
   build-ios-ipa:
-    runs-on: macos-15
+    # See ios-release.yml — macos-15's Xcode is too old for current Apple
+    # SDK requirements.
+    runs-on: macos-latest
     timeout-minutes: 60
 
     steps:
