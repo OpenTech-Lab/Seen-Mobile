@@ -107,10 +107,16 @@ jobs:
             exit 1
           fi
 
-          # Verify password by reading the p12.
-          if ! openssl pkcs12 -in "$CERT_PATH" -passin pass:"$IOS_DISTRIBUTION_CERTIFICATE_PASSWORD" -nodes -out "$CERT_PEM_PATH" >/dev/null 2>&1; then
-            echo "Failed to read p12. Verify IOS_DISTRIBUTION_CERTIFICATE_PASSWORD and p12 content."
-            exit 1
+          # Verify password by reading the p12. The p12 is RC2-40-CBC (-legacy)
+          # encrypted; OpenSSL 3.x on newer macOS runner images refuses to
+          # touch that cipher unless -legacy is passed. Try -legacy first,
+          # fall back without it for older openssl/LibreSSL builds that
+          # don't recognize the flag at all.
+          if ! openssl pkcs12 -legacy -in "$CERT_PATH" -passin pass:"$IOS_DISTRIBUTION_CERTIFICATE_PASSWORD" -nodes -out "$CERT_PEM_PATH" >/dev/null 2>&1; then
+            if ! openssl pkcs12 -in "$CERT_PATH" -passin pass:"$IOS_DISTRIBUTION_CERTIFICATE_PASSWORD" -nodes -out "$CERT_PEM_PATH" >/dev/null 2>&1; then
+              echo "Failed to read p12. Verify IOS_DISTRIBUTION_CERTIFICATE_PASSWORD and p12 content."
+              exit 1
+            fi
           fi
 
           # The p12 was created with -legacy (RC2-40-CBC) on Linux and can be imported directly
