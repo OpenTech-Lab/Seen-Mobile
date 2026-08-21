@@ -7,6 +7,15 @@ begin
   if exists (
     select 1
     from public.profiles
+    where legacy_pubkey is not null
+      and legacy_pubkey !~ '^[0-9a-f]{64}$'
+  ) then
+    raise exception 'non-canonical legacy_pubkey bindings must be resolved before security migration';
+  end if;
+
+  if exists (
+    select 1
+    from public.profiles
     where legacy_pubkey is not null and btrim(legacy_pubkey) <> ''
     group by lower(btrim(legacy_pubkey))
     having count(*) > 1
@@ -37,6 +46,7 @@ set device_id = excluded.device_id,
 update public.profiles set device_id = null where device_id is not null;
 
 alter table public.profile_private enable row level security;
+revoke all on public.profile_private from public, anon, authenticated;
 grant select, insert, update, delete on public.profile_private to authenticated;
 
 drop policy if exists profile_private_owner_access on public.profile_private;
@@ -53,7 +63,8 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  if old.legacy_pubkey is not null
+  if tg_op = 'UPDATE'
+     and old.legacy_pubkey is not null
      and btrim(old.legacy_pubkey) <> ''
      and new.legacy_pubkey is distinct from old.legacy_pubkey then
     raise exception 'legacy identity binding is immutable';
@@ -70,7 +81,7 @@ $$;
 
 drop trigger if exists profiles_protect_identity on public.profiles;
 create trigger profiles_protect_identity
-before update on public.profiles
+before insert or update on public.profiles
 for each row
 execute function public.protect_profile_identity();
 
@@ -265,6 +276,22 @@ begin
 end;
 $$;
 
+-- Feed mirrors intentionally omit source-table foreign keys, but retain the
+-- indexes required by the mobile read paths: newest-first, author, and event.
+create index if not exists post_feed_created_at_idx
+  on public.post_feed (created_at desc)
+  where deleted_at is null;
+create index if not exists post_feed_user_id_created_at_idx
+  on public.post_feed (user_id, created_at desc)
+  where deleted_at is null;
+create index if not exists post_feed_event_hashtag_created_at_idx
+  on public.post_feed (event_hashtag, created_at desc)
+  where deleted_at is null;
+create index if not exists witness_feed_created_at_idx
+  on public.witness_feed (created_at desc);
+create index if not exists witness_feed_event_hashtag_created_at_idx
+  on public.witness_feed (event_hashtag, created_at desc);
+
 create or replace function public.sync_post_feed_row()
 returns trigger
 language plpgsql
@@ -373,14 +400,16 @@ insert into public.post_feed select p.* from public.posts as p;
 update public.post_feed as feed
 set latitude = null, longitude = null, gps = null
 from public.profiles as owner
-where owner.id = feed.user_id and not owner.footprint_map_public;
+where owner.id = feed.user_id
+  and not coalesce(owner.footprint_map_public, false);
 
 truncate table public.witness_feed;
 insert into public.witness_feed select w.* from public.witness_signals as w;
 update public.witness_feed as feed
 set latitude = null, longitude = null, gps = null
 from public.profiles as owner
-where owner.id = feed.user_id and not owner.footprint_map_public;
+where owner.id = feed.user_id
+  and not coalesce(owner.footprint_map_public, false);
 
 create or replace function public.resync_profile_feed_privacy()
 returns trigger
@@ -415,6 +444,8 @@ for each row execute function public.resync_profile_feed_privacy();
 
 alter table public.post_feed enable row level security;
 alter table public.witness_feed enable row level security;
+revoke all on public.post_feed, public.witness_feed
+  from public, anon, authenticated;
 grant select on public.post_feed, public.witness_feed to authenticated;
 
 drop policy if exists post_feed_authenticated_read on public.post_feed;
