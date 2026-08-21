@@ -1,7 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'package:mobile/core/recovery_qr_image.dart';
 import 'package:mobile/core/wallet.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/theme/spot_theme.dart';
@@ -55,7 +60,7 @@ class _RecoveryQrScannerScreenState extends State<RecoveryQrScannerScreen> {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (image == null || !mounted) return;
 
-      final capture = await _controller.analyzeImage(image.path);
+      final capture = await _analyzePickedImage(image.path);
       if (!mounted) return;
       if (capture != null) {
         _handleCapture(capture);
@@ -69,6 +74,55 @@ class _RecoveryQrScannerScreenState extends State<RecoveryQrScannerScreen> {
       }
     } finally {
       if (mounted) setState(() => _isPickingImage = false);
+    }
+  }
+
+  Future<BarcodeCapture?> _analyzePickedImage(String path) async {
+    final capture = await _controller.analyzeImage(path);
+    if (_containsRecoveryPayload(capture)) return capture;
+
+    // Older exports were missing the QR quiet zone.  Normalize a temporary
+    // copy so those backups remain recoverable after this app is updated.
+    final normalizedPath = await _createNormalizedImage(path);
+    if (normalizedPath == null) return capture;
+
+    try {
+      final normalizedCapture = await _controller.analyzeImage(normalizedPath);
+      return normalizedCapture ?? capture;
+    } finally {
+      try {
+        await File(normalizedPath).delete();
+      } catch (_) {
+        // Best-effort cleanup of the temporary scan copy.
+      }
+    }
+  }
+
+  bool _containsRecoveryPayload(BarcodeCapture? capture) {
+    if (capture == null) return false;
+    return capture.barcodes.any((barcode) {
+      final raw = barcode.rawValue?.trim();
+      return raw != null && WalletService.isRecoveryPayload(raw);
+    });
+  }
+
+  Future<String?> _createNormalizedImage(String path) async {
+    try {
+      final sourceBytes = await File(path).readAsBytes();
+      final normalizedBytes = addRecoveryQrQuietZone(
+        Uint8List.fromList(sourceBytes),
+      );
+      if (normalizedBytes == null) return null;
+
+      final file = File(
+        '${Directory.systemTemp.path}/seen-recovery-${DateTime.now().microsecondsSinceEpoch}.png',
+      );
+      await file.writeAsBytes(normalizedBytes, flush: true);
+      return file.path;
+    } on img.ImageException {
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 

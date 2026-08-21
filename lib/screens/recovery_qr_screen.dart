@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import 'package:mobile/core/recovery_qr_image.dart';
 import 'package:mobile/core/wallet.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/wallet_model.dart';
@@ -38,6 +39,7 @@ class _RecoveryQrScreenState extends State<RecoveryQrScreen> {
         data: _payload,
         version: QrVersions.auto,
         gapless: true,
+        errorCorrectionLevel: QrErrorCorrectLevel.H,
       );
       final imageData = await painter.toImageData(1200);
       if (imageData == null) {
@@ -49,12 +51,13 @@ class _RecoveryQrScreenState extends State<RecoveryQrScreen> {
         throw StateError('Photo access was denied');
       }
 
-      final bytes = Uint8List.fromList(
+      final rawBytes = Uint8List.fromList(
         imageData.buffer.asUint8List(
           imageData.offsetInBytes,
           imageData.lengthInBytes,
         ),
       );
+      final bytes = addRecoveryQrQuietZone(rawBytes, padding: 120) ?? rawBytes;
       await Gal.putImageBytes(bytes, album: '#seen');
 
       if (!mounted) return;
