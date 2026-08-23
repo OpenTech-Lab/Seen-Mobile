@@ -26,17 +26,29 @@ appId: com.icyanstudio.spot
 # box from ~66% to ~77% of screen height, so any single hard-coded point can
 # only ever work on one of the two.
 #
-# Target the element instead. The Checkbox is the only node lying to the left
-# of the agreement label — confirmed against the iOS accessibility hierarchy
-# captured in run 32644516742, where the box is [44,646][92,694] and the label
-# is [100,657][358,741], with no other node ending before x=100 on that row.
+# What actually works is the CASCADE below, not any single selector. Each step
+# is guarded on "Agree and continue" still reporting disabled, and the whole
+# thing is closed out by an explicit assertion that it became enabled — so the
+# flow detects for itself whether consent registered instead of assuming a tap
+# landed. A bare tap ALWAYS reports COMPLETED even when it hits nothing, which
+# is the trap that made the original failure look like a broken identity
+# screen three steps later.
+#
+# Attempt 1, leftOf the label: measured NO-OP on iOS in run 32673882134 — it
+# reported COMPLETED while the button stayed disabled, so the guard below still
+# fired. Kept as a harmless best-effort first try (it may work on Android) but
+# do NOT rely on it. Why it fails is unproven: the run-32644516742 hierarchy
+# shows the checkbox [44,646][92,694] as the only node ending before x=100 on
+# the label's row, so it should be unambiguous. A passing run writes no
+# hierarchy dump, so there is nothing to diagnose it from yet.
 - tapOn:
     leftOf:
       text: "I agree to #seen.*"
     optional: true
 
-# Coordinates survive only as a backstop, and each one fires solely while the
-# button is STILL disabled — so a stray tap can never toggle consent back off.
+# Attempt 2, iOS coordinate. This is the step that actually checks the box on
+# iOS (confirmed in run 32673882134). The label wraps to more lines there,
+# putting the 48x48 Checkbox at ~17%,77% of a 402x874 screen.
 - runFlow:
     when:
       notVisible:
@@ -46,6 +58,10 @@ appId: com.icyanstudio.spot
       - tapOn:
           point: "17%,77%"
 
+# Attempt 3, Android coordinate — the original working value. SKIPPED on iOS
+# because attempt 2 already enabled the button, which is exactly the point of
+# the guard: the wrong-platform coordinate can never fire and toggle consent
+# back OFF.
 - runFlow:
     when:
       notVisible:
