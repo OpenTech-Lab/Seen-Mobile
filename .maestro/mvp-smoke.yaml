@@ -12,17 +12,55 @@ appId: com.icyanstudio.spot
 - tapOn: "Get started"
 
 # UGC community-terms gate (lib/widgets/ugc_terms_gate.dart) sits between
-# onboarding and identity creation. Its Checkbox and the agreement Text are
-# SIBLINGS in a Row (ugc_terms_gate.dart:100-115) — the label has no gesture
-# detector, so tapping the text does nothing. Tap the Checkbox itself by point.
-# "Agree and continue" has onPressed: null until _hasAgreed is true, so this
-# tap is required, not cosmetic.
+# onboarding and identity creation.
 - extendedWaitUntil:
     visible: "Agree to the community terms"
     timeout: 30000
 - takeScreenshot: community-terms
+
+# The Checkbox and the agreement wording are SIBLINGS in a Row, so the label
+# carries no gesture detector: tapping the text reports COMPLETED while
+# toggling nothing, and "Agree and continue" stays disabled (onPressed: null
+# until _hasAgreed). The box itself has to be hit — and its position is NOT
+# stable across platforms: the label wraps to more lines on iOS, moving the
+# box from ~66% to ~77% of screen height, so any single hard-coded point can
+# only ever work on one of the two.
+#
+# Target the element instead. The Checkbox is the only node lying to the left
+# of the agreement label — confirmed against the iOS accessibility hierarchy
+# captured in run 32644516742, where the box is [44,646][92,694] and the label
+# is [100,657][358,741], with no other node ending before x=100 on that row.
 - tapOn:
-    point: "16%,66%"
+    leftOf:
+      text: "I agree to #seen.*"
+    optional: true
+
+# Coordinates survive only as a backstop, and each one fires solely while the
+# button is STILL disabled — so a stray tap can never toggle consent back off.
+- runFlow:
+    when:
+      notVisible:
+        text: "Agree and continue"
+        enabled: true
+    commands:
+      - tapOn:
+          point: "17%,77%"
+
+- runFlow:
+    when:
+      notVisible:
+        text: "Agree and continue"
+        enabled: true
+    commands:
+      - tapOn:
+          point: "16%,66%"
+
+# Assert consent actually registered, so a failure here names the checkbox
+# instead of surfacing three steps later as a missing "Generate new identity".
+- assertVisible:
+    text: "Agree and continue"
+    enabled: true
+- takeScreenshot: community-terms-accepted
 - tapOn: "Agree and continue"
 
 - extendedWaitUntil:
