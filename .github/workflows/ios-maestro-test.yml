@@ -12,9 +12,16 @@ on:
 
 jobs:
   maestro-ios:
-    # See ios-release.yml — macos-15's Xcode is too old for current Apple SDK
-    # requirements. Keep this in step with the other iOS workflows.
-    runs-on: macos-latest
+    # Intel runner ON PURPOSE — do not "modernise" this to macos-latest.
+    # google_mlkit_face_detection pulls in MLImage.framework, which ships no
+    # arm64-SIMULATOR slice. macos-latest is Apple Silicon, so its simulator is
+    # arm64 and the link fails with:
+    #   "Building for 'iOS-simulator', but linking in object file
+    #    (.../MLImage.framework/MLImage[arm64](GMLImage.o)) built for 'iOS'"
+    # An Intel runner gives an x86_64 simulator, which ML Kit does ship.
+    # (ios-release.yml builds for a real DEVICE, so it is unaffected and
+    # correctly stays on macos-latest.)
+    runs-on: macos-13
     timeout-minutes: 60
 
     steps:
