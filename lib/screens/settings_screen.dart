@@ -670,18 +670,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: SpotSpacing.sm),
           _SettingsRow(
-            icon: CupertinoIcons.doc_plaintext,
-            label: l10n.termsOfUseTitle,
-            onTap: _openTermsOfUse,
-          ),
-          const SizedBox(height: SpotSpacing.sm),
-          _SettingsRow(
-            icon: CupertinoIcons.lock_shield,
-            label: l10n.privacyPolicyTitle,
-            onTap: _openPrivacyPolicy,
-          ),
-          const SizedBox(height: SpotSpacing.sm),
-          _SettingsRow(
             icon: CupertinoIcons.list_bullet,
             label: l10n.viewMyActivityLabel,
             onTap: _openPublicActivityMenu,
@@ -756,6 +744,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: l10n.logOutLabel,
             value: _isLoggingOut ? l10n.signingOutLabel : null,
             onTap: _confirmLogout,
+          ),
+          const SizedBox(height: SpotSpacing.xl),
+          _SettingsRow(
+            icon: CupertinoIcons.doc_plaintext,
+            label: l10n.termsOfUseTitle,
+            onTap: _openTermsOfUse,
+          ),
+          const SizedBox(height: SpotSpacing.sm),
+          _SettingsRow(
+            icon: CupertinoIcons.lock_shield,
+            label: l10n.privacyPolicyTitle,
+            onTap: _openPrivacyPolicy,
           ),
           const SizedBox(height: SpotSpacing.xxl),
         ],

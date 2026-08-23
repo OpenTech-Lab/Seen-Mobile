@@ -1,0 +1,31 @@
+appId: com.icyanstudio.spot
+---
+- launchApp
+
+# The ALTCHA proof-of-work gate (lib/widgets/altcha_gate_screen.dart) solves
+# ~50k SHA-256 hashes in an isolate before onboarding renders. A debug/JIT
+# build on an emulator is far slower than the "< 2s" the source comment claims.
+- extendedWaitUntil:
+    visible: "Get started"
+    timeout: 60000
+- takeScreenshot: onboarding
+- tapOn: "Get started"
+
+# UGC community-terms gate (lib/widgets/ugc_terms_gate.dart) sits between
+# onboarding and identity creation. Its Checkbox and the agreement Text are
+# SIBLINGS in a Row (ugc_terms_gate.dart:100-115) — the label has no gesture
+# detector, so tapping the text does nothing. Tap the Checkbox itself by point.
+# "Agree and continue" has onPressed: null until _hasAgreed is true, so this
+# tap is required, not cosmetic.
+- extendedWaitUntil:
+    visible: "Agree to the community terms"
+    timeout: 30000
+- takeScreenshot: community-terms
+- tapOn:
+    point: "16%,66%"
+- tapOn: "Agree and continue"
+
+- extendedWaitUntil:
+    visible: "Generate new identity"
+    timeout: 30000
+- takeScreenshot: create-identity

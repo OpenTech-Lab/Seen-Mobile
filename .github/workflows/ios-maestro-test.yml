@@ -1,0 +1,109 @@
+name: (Test)Maestro MVP smoke — iOS Simulator
+
+# iOS cannot be driven from the Linux dev box: Maestro's iOS driver needs
+# macOS + Xcode simulators, so this job is where the iOS half of the MVP QA
+# suite actually runs. The flow at .maestro/mvp-smoke.yaml is the SAME file the
+# Android run uses — the bundle id and the Android applicationId are both
+# com.icyanstudio.spot, and every selector is visible text, so one flow serves
+# both platforms.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  maestro-ios:
+    # See ios-release.yml — macos-15's Xcode is too old for current Apple SDK
+    # requirements. Keep this in step with the other iOS workflows.
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Pinned to match ios-release.yml — see that file for why.
+          flutter-version: 3.41.9
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: pod install
+
+      - name: Validate required runtime secrets
+        run: |
+          required=(
+            SUPABASE_URL
+            SUPABASE_ANON_KEY
+          )
+
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              echo "Missing required secret: $name"
+              exit 1
+            fi
+          done
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      # Without these --dart-defines AppConfig._requireBuildValue throws
+      # "Missing required --dart-define: SUPABASE_URL" and Dart main() dies
+      # before the first frame — the app process lives but renders nothing.
+      - name: Build for iOS Simulator (debug)
+        env:
+          CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
+          CDN_PRESIGN_URL: ${{ secrets.CDN_PRESIGN_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          build_cmd=(flutter build ios --simulator --debug)
+          build_cmd+=("--dart-define=SUPABASE_URL=$SUPABASE_URL")
+          build_cmd+=("--dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY")
+          if [ -n "$CDN_BASE_URL" ]; then
+            build_cmd+=("--dart-define=CDN_BASE_URL=$CDN_BASE_URL")
+          fi
+          if [ -n "$CDN_PRESIGN_URL" ]; then
+            build_cmd+=("--dart-define=CDN_PRESIGN_URL=$CDN_PRESIGN_URL")
+          fi
+          "${build_cmd[@]}"
+
+      - name: Boot iOS Simulator
+        run: |
+          xcrun simctl list devices available
+          # Pick the first available iPhone rather than pinning a model name —
+          # the runner image's device list changes between Xcode releases.
+          udid=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in ds for d in ds[rt] if d['name'].startswith('iPhone')))")
+          echo "Booting $udid"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          echo "SIM_UDID=$udid" >> "$GITHUB_ENV"
+
+      - name: Install app on Simulator
+        run: xcrun simctl install "$SIM_UDID" build/ios/iphonesimulator/Runner.app
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Run MVP smoke flow
+        run: maestro test --no-ansi .maestro/mvp-smoke.yaml
+
+      # Screenshots are the actual evidence — a green status with a blank
+      # screenshot means the ALTCHA gate or the terms gate silently stalled.
+      - name: Upload Maestro artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-ios-artifacts
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            ~/.maestro/tests/**
