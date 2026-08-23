@@ -12,16 +12,22 @@ on:
 
 jobs:
   maestro-ios:
-    # Intel runner ON PURPOSE — do not "modernise" this to macos-latest.
-    # google_mlkit_face_detection pulls in MLImage.framework, which ships no
-    # arm64-SIMULATOR slice. macos-latest is Apple Silicon, so its simulator is
-    # arm64 and the link fails with:
+    # KNOWN BLOCKER — this workflow will fail at the build step until the
+    # ML Kit dependency is dealt with. Left in place so the failure is visible
+    # and reproducible rather than silently absent.
+    #
+    # google_mlkit_face_detection (-> MLImage.framework) ships no arm64
+    # SIMULATOR slice, so building for an Apple Silicon simulator fails:
     #   "Building for 'iOS-simulator', but linking in object file
     #    (.../MLImage.framework/MLImage[arm64](GMLImage.o)) built for 'iOS'"
-    # An Intel runner gives an x86_64 simulator, which ML Kit does ship.
-    # (ios-release.yml builds for a real DEVICE, so it is unaffected and
-    # correctly stays on macos-latest.)
-    runs-on: macos-13
+    #
+    # Options, none of which belong in a QA workflow alone:
+    #  1. Bump google_mlkit_face_detection — newer ML Kit ships arm64 sim slices.
+    #  2. Add a Podfile post_install hook setting
+    #     EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64 (x86_64 sim under Rosetta).
+    #  3. Run against a real device instead of a simulator (needs signing).
+    # macos-13 (Intel) also works but those runners are retired and queue forever.
+    runs-on: macos-latest
     timeout-minutes: 60
 
     steps:
