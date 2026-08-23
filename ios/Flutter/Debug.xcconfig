@@ -1,1 +1,6 @@
 #include "Generated.xcconfig"
+
+// Matches the Podfile post_install hook: ML Kit has no arm64 simulator slice,
+// so the Runner target must exclude arm64 for the simulator too, or the app
+// and the pods disagree on architecture and the link still fails.
+EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64

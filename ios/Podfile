@@ -37,6 +37,10 @@ end
 post_install do |installer|
   installer.pods_project.build_configurations.each do |config|
     config.build_settings['EXCLUDED_ARCHS[sdk=*]'] = 'armv7'
+    # google_mlkit_face_detection -> MLImage.framework ships no arm64 SIMULATOR
+    # slice, so an Apple Silicon simulator build fails to link it. Build the
+    # simulator app x86_64 and let Rosetta run it. Device builds are untouched.
+    config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = $iOSVersion
   end
 
@@ -45,6 +49,10 @@ post_install do |installer|
 
     target.build_configurations.each do |config|
       config.build_settings['EXCLUDED_ARCHS[sdk=*]'] = 'armv7'
+    # google_mlkit_face_detection -> MLImage.framework ships no arm64 SIMULATOR
+    # slice, so an Apple Silicon simulator build fails to link it. Build the
+    # simulator app x86_64 and let Rosetta run it. Device builds are untouched.
+    config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
       deployment_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
       if deployment_target.nil? || Gem::Version.new(deployment_target) < Gem::Version.new($iOSVersion)
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = $iOSVersion
